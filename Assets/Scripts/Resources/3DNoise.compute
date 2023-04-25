@@ -1,0 +1,16 @@
+﻿#pragma kernel Generate3DNoise
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+    float3 tangent;
+};
+
+RWTexture3D<float> noiseTex;
+
+[numthreads(8,8,8)]
+void Generate3DNoise (uint3 id : SV_DispatchThreadID)
+{
+    
+}

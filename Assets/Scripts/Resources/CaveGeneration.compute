@@ -1,0 +1,18 @@
+#pragma kernel GenerateCave
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+    float3 tangent;
+};
+
+AppendStructuredBuffer<Vertex> vertexBuffer;
+AppendStructuredBuffer<uint> indexBuffer;
+StructuredBuffer<float4> points;
+
+[numthreads(8,8,8)]
+void GenerateCave (uint3 id : SV_DispatchThreadID)
+{
+    
+}
