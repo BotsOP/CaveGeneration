@@ -1,18 +1,124 @@
 #pragma kernel GenerateCave
+#pragma kernel CopyDataToMesh
+#include "Includes/MarchTables.compute"
 
 struct Vertex
 {
     float3 position;
     float3 normal;
-    float3 tangent;
 };
 
-AppendStructuredBuffer<Vertex> vertexBuffer;
-AppendStructuredBuffer<uint> indexBuffer;
-StructuredBuffer<float4> points;
+struct Triangle
+{
+    Vertex vertex1;
+    Vertex vertex2;
+    Vertex vertex3;
+};
+
+AppendStructuredBuffer<Triangle> appendTriangleBuffer;
+StructuredBuffer<Triangle> triangleBuffer;
+RWStructuredBuffer<Vertex> vertexBuffer;
+RWStructuredBuffer<int> amountTrianglesBuffer;
+RWStructuredBuffer<uint> indexBuffer;
+RWTexture3D<float> noiseTex;
+uint chunkSize;
+float isoLevel;
+
+static const float3 posTable[8] = {
+    float3(0,0,0),
+    float3(1,0,0),
+    float3(1,0,1),
+    float3(0,0,1),
+    float3(0,1,0),
+    float3(1,1,0),
+    float3(1,1,1),
+    float3(0,1,1),
+};
+
+float3 interpolateVerts(float3 v1, float3 v2, float t) {
+    return v1.xyz + t * (v2.xyz-v1.xyz);
+}
 
 [numthreads(8,8,8)]
 void GenerateCave (uint3 id : SV_DispatchThreadID)
 {
-    
+    if (id.x >= chunkSize - 1 || id.y >= chunkSize - 1 || id.z >= chunkSize - 1) {
+        return;
+    }
+
+    // 8 corners of the current cube
+    float cubeCorners[8] = {
+        noiseTex[id + uint3(0, 0, 0)],
+        noiseTex[id + uint3(1, 0, 0)],
+        noiseTex[id + uint3(1, 0, 1)],
+        noiseTex[id + uint3(0, 0, 1)],
+        noiseTex[id + uint3(0, 1, 0)],
+        noiseTex[id + uint3(1, 1, 0)],
+        noiseTex[id + uint3(1, 1, 1)],
+        noiseTex[id + uint3(0, 1, 1)],
+    };
+
+    // Calculate unique index for each cube configuration.
+    // There are 256 possible values
+    // A value of 0 means cube is entirely inside surface; 255 entirely outside.
+    // The value is used to look up the edge table, which indicates which edges of the cube are cut by the isosurface.
+    int cubeIndex = 0;
+    if (cubeCorners[0] < isoLevel) cubeIndex |= 1;
+    if (cubeCorners[1] < isoLevel) cubeIndex |= 2;
+    if (cubeCorners[2] < isoLevel) cubeIndex |= 4;
+    if (cubeCorners[3] < isoLevel) cubeIndex |= 8;
+    if (cubeCorners[4] < isoLevel) cubeIndex |= 16;
+    if (cubeCorners[5] < isoLevel) cubeIndex |= 32;
+    if (cubeCorners[6] < isoLevel) cubeIndex |= 64;
+    if (cubeCorners[7] < isoLevel) cubeIndex |= 128;
+
+    // Create triangles for current cube configuration
+    for (int i = 0; triangulation[cubeIndex][i] != -1; i +=3) {
+        // Get indices of corner points A and B for each of the three edges
+        // of the cube that need to be joined to form the triangle.
+        int a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
+        int b0 = cornerIndexBFromEdge[triangulation[cubeIndex][i]];
+
+        int a1 = cornerIndexAFromEdge[triangulation[cubeIndex][i+1]];
+        int b1 = cornerIndexBFromEdge[triangulation[cubeIndex][i+1]];
+
+        int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i+2]];
+        int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i+2]];
+
+        Vertex vertex1;
+        vertex1.position = (float3)id + interpolateVerts(posTable[a0], posTable[b0], (isoLevel - cubeCorners[a0]) / (cubeCorners[b0] - cubeCorners[a0]));
+        Vertex vertex2;
+        vertex2.position = (float3)id + interpolateVerts(posTable[a1], posTable[b1], (isoLevel - cubeCorners[a1]) / (cubeCorners[b1] - cubeCorners[a1]));
+        Vertex vertex3;
+        vertex3.position = (float3)id + interpolateVerts(posTable[a2], posTable[b2], (isoLevel - cubeCorners[a2]) / (cubeCorners[b2] - cubeCorners[a2]));
+
+        float3 edge1 = vertex2.position - vertex1.position;
+        float3 edge2 = vertex3.position - vertex1.position;
+        float3 normal = cross(edge1, edge2);
+        normalize(normal);
+        vertex1.normal = normal;
+        vertex2.normal = normal;
+        vertex3.normal = normal;
+        
+        Triangle triangle1;
+        triangle1.vertex1 = vertex1;
+        triangle1.vertex2 = vertex2;
+        triangle1.vertex3 = vertex3;
+
+
+        appendTriangleBuffer.Append(triangle1);
+        
+        InterlockedAdd(amountTrianglesBuffer[0], 1);
+    }
+}
+
+[numthreads(512,1,1)]
+void CopyDataToMesh (uint3 id : SV_DispatchThreadID)
+{
+    vertexBuffer[id.x * 3 + 0] = triangleBuffer[id.x].vertex1;
+    vertexBuffer[id.x * 3 + 1] = triangleBuffer[id.x].vertex2;
+    vertexBuffer[id.x * 3 + 2] = triangleBuffer[id.x].vertex3;
+    indexBuffer[id.x * 3 + 0] = id.x * 3 + 0;
+    indexBuffer[id.x * 3 + 1] = id.x * 3 + 1;
+    indexBuffer[id.x * 3 + 2] = id.x * 3 + 2;
 }

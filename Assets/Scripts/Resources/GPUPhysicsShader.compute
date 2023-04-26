@@ -1,0 +1,13 @@
+#pragma kernel SDFOverlapSphere
+
+RWTexture3D<float> sdf;
+float3 noiseOffset;
+float noiseScale;
+float4 circle;
+
+[numthreads(8,8,8)]
+void SDFOverlapSphere (uint3 id : SV_DispatchThreadID)
+{
+	float terrainValue = sdf[noiseOffset + id];
+	
+}

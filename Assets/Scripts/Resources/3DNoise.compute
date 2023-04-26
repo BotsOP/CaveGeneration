@@ -1,16 +1,23 @@
 ﻿#pragma kernel Generate3DNoise
-
-struct Vertex
-{
-    float3 position;
-    float3 normal;
-    float3 tangent;
-};
+#include "Includes/Noise.compute"
 
 RWTexture3D<float> noiseTex;
+float noiseScale;
+float3 noiseOffset;
+int topLevel;
 
 [numthreads(8,8,8)]
 void Generate3DNoise (uint3 id : SV_DispatchThreadID)
 {
-    
+    float3 wsPos = (float3)id + noiseOffset;
+    float noise1 = snoise_grad(wsPos / noiseScale * 0.5);
+
+    float3 wsPosScaled = wsPos;
+    wsPosScaled.y *= 2;
+    float noise2 = snoise_grad(wsPosScaled / noiseScale);
+    float noise = max(noise1, noise2);
+    float distanceToBottom = saturate(wsPos.y / 10);
+    float distanceToTop = saturate((240 - wsPos.y) / 10);
+    noise *= distanceToBottom * distanceToTop;
+    noiseTex[id] = noise;
 }
