@@ -14,6 +14,18 @@ RWStructuredBuffer<int> output;
 
 bool SphereTriangleCollision(float3 sphereCenter, float sphereRadius, float3 p0, float3 p1, float3 p2)
 {
+	if(distance(sphereCenter, p0) < sphereRadius)
+	{
+		return true;
+	}
+	if(distance(sphereCenter, p1) < sphereRadius)
+	{
+		return true;
+	}
+	if(distance(sphereCenter, p2) < sphereRadius)
+	{
+		return true;
+	}
 	// Calculate the triangle's plane normal
 	float3 N = normalize(cross(p1 - p0, p2 - p0));
 
@@ -53,36 +65,29 @@ float3 rayDirection;
 RWStructuredBuffer<int> countBuffer;
 AppendStructuredBuffer<float4> intersectBuffer;
 
-bool IntersectTriangle(float3 p0, float3 p1, float3 p2, out float t, out float3 intersectionPoint) {
-	float3 edge1 = p1 - p0;
-	float3 edge2 = p2 - p0;
-	float3 pvec = cross(rayDirection, edge2);
-	float det = dot(edge1, pvec);
-
-	if (abs(det) < 1e-8) {
-		intersectionPoint = float3(0, 0, 0);
+bool RayTriangleIntersect(float3 V0, float3 V1, float3 V2, out float Distance)
+{
+	float3 E1 = V1 - V0;
+	float3 E2 = V2 - V0;
+	float3 P = cross(rayDirection, E2);
+	float Det = dot(E1, P);
+	
+	if (Det > -0.000001f && Det < 0.000001f)
 		return false;
-	}
-
-	float inv_det = 1.0 / det;
-	float3 tvec = rayOrigin - p0;
-	float u = dot(tvec, pvec) * inv_det;
-
-	if (u < 0.0 || u > 1.0) {
-		intersectionPoint = float3(0, 0, 0);
+	
+	float3 T = rayOrigin - V0;
+	float U = dot(T, P) / Det;
+	
+	if (U < 0.0f || U > 1.0f)
 		return false;
-	}
-
-	float3 qvec = cross(tvec, edge1);
-	float v = dot(rayDirection, qvec) * inv_det;
-
-	if (v < 0.0 || u + v > 1.0) {
-		intersectionPoint = float3(0, 0, 0);
+	
+	float3 Q = cross(T, E1);
+	float V = dot(rayDirection, Q) / Det;
+	
+	if (V < 0.0f || U + V > 1.0f)
 		return false;
-	}
-
-	t = dot(edge2, qvec) * inv_det;
-	intersectionPoint = rayOrigin + rayDirection * t;
+	
+	Distance = dot(E2, Q) / Det;
 	return true;
 }
 
@@ -94,11 +99,10 @@ void MeshIntersectRay (uint id : SV_DispatchThreadID)
 	float3 pos2 = vertexBuffer[indexBuffer[id * 3 + 2]].position;
 
 	float t;
-	float3 intersectionPoint;
-
-	if(IntersectTriangle(pos0, pos1, pos2, t, intersectionPoint))
+	if(RayTriangleIntersect(pos0, pos1, pos2, t))
 	{
 		InterlockedAdd(countBuffer[0], 1);
-		intersectBuffer.Append(float4(intersectionPoint, t));
+		intersectBuffer.Append(float4(rayOrigin + rayDirection * t, id));
 	}
+	
 }

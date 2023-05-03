@@ -89,9 +89,10 @@ public class CaveGeneratorManager : MonoBehaviour
         // Vector4 sphereGPU = new Vector4(sphere.position.x, sphere.position.y, sphere.position.z, sphere.lossyScale.x / 2);
         // Debug.Log(GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, chunks[0][0][0].chunkPosition, sphereGPU));
         //Debug.Log(Camera.main.transform.right);
-        Vector3 point = GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, Camera.main.transform.position, Camera.main.transform.forward);
+        Vector3 point = GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, 
+            Camera.main.transform.position, Camera.main.transform.forward * 1000);
         Debug.Log(point);
-        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward);
+        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * 1000);
         //Debug.Log(Camera.main.transform.forward);
         sphere.position = point;
     }

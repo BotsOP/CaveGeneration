@@ -59,26 +59,29 @@ public static class GPUPhysics
         gpuPhysicsShader.Dispatch(1, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
         
         int[] counters = new int[1];
-        resultBuffer.GetData(counters);
+        countBuffer.GetData(counters);
         int counter = counters[0];
 
-        if (counter == 0)
+        if (counter <= 0)
         {
             return new Vector3(0, -1000, 0);
         }
 
-        Vector4[] intersections = new Vector4[100];
+        Vector4[] intersections = new Vector4[counter];
         intersectBuffer.GetData(intersections);
         float lowestT = float.MaxValue;
         Vector3 point = new Vector3(0, -1000, 0);
-        foreach (var intersect in intersections)
+        for (var i = 0; i < counter; i++)
         {
-            if (intersect.w < lowestT)
+            var intersect = intersections[i];
+            Vector3 pos = new Vector3(intersect.x, intersect.y, intersect.z);
+            if (Vector3.Distance(_rayOrigin, pos) < lowestT)
             {
-                lowestT = intersect.w;
+                lowestT = Vector3.Distance(_rayOrigin, pos);
                 point = intersect;
             }
         }
+
         return point;
     }
 }
