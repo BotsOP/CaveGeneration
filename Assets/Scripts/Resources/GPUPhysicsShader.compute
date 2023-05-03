@@ -1,13 +1,104 @@
-#pragma kernel SDFOverlapSphere
+#pragma kernel MeshOverlapSphere
+#pragma kernel MeshIntersectRay
 
-RWTexture3D<float> sdf;
-float3 noiseOffset;
-float noiseScale;
-float4 circle;
-
-[numthreads(8,8,8)]
-void SDFOverlapSphere (uint3 id : SV_DispatchThreadID)
+struct Vertex
 {
-	float terrainValue = sdf[noiseOffset + id];
-	
+	float3 position;
+	float3 normal;
+};
+
+RWStructuredBuffer<Vertex> vertexBuffer;
+RWStructuredBuffer<uint> indexBuffer;
+float4 circle;
+RWStructuredBuffer<int> output;
+
+bool SphereTriangleCollision(float3 sphereCenter, float sphereRadius, float3 p0, float3 p1, float3 p2)
+{
+	// Calculate the triangle's plane normal
+	float3 N = normalize(cross(p1 - p0, p2 - p0));
+
+	// Calculate the signed distance between the sphere's center and the plane
+	float dist = dot(sphereCenter - p0, N);
+
+	// Check if the sphere intersects the plane
+	if (dist < -sphereRadius || dist > sphereRadius)
+		return false;
+
+	// Project the sphere's center onto the triangle's plane
+	float3 point0 = sphereCenter - N * dist;
+
+	// Determine if the projected point is inside the triangle
+	float3 c0 = cross(point0 - p0, p1 - p0);
+	float3 c1 = cross(point0 - p1, p2 - p1);
+	float3 c2 = cross(point0 - p2, p0 - p2);
+	bool inside = dot(c0, N) <= 0 && dot(c1, N) <= 0 && dot(c2, N) <= 0;
+
+	return inside;
+}
+
+[numthreads(512,1,1)]
+void MeshOverlapSphere (uint id : SV_DispatchThreadID)
+{
+	float3 pos0 = vertexBuffer[indexBuffer[id * 3 + 0]].position;
+	float3 pos1 = vertexBuffer[indexBuffer[id * 3 + 1]].position;
+	float3 pos2 = vertexBuffer[indexBuffer[id * 3 + 2]].position;
+	if(SphereTriangleCollision(circle.xyz, circle.w, pos0, pos1, pos2))
+	{
+		InterlockedAdd(output[0], 1);
+	}
+}
+
+float3 rayOrigin;
+float3 rayDirection;
+RWStructuredBuffer<int> countBuffer;
+AppendStructuredBuffer<float4> intersectBuffer;
+
+bool IntersectTriangle(float3 p0, float3 p1, float3 p2, out float t, out float3 intersectionPoint) {
+	float3 edge1 = p1 - p0;
+	float3 edge2 = p2 - p0;
+	float3 pvec = cross(rayDirection, edge2);
+	float det = dot(edge1, pvec);
+
+	if (abs(det) < 1e-8) {
+		intersectionPoint = float3(0, 0, 0);
+		return false;
+	}
+
+	float inv_det = 1.0 / det;
+	float3 tvec = rayOrigin - p0;
+	float u = dot(tvec, pvec) * inv_det;
+
+	if (u < 0.0 || u > 1.0) {
+		intersectionPoint = float3(0, 0, 0);
+		return false;
+	}
+
+	float3 qvec = cross(tvec, edge1);
+	float v = dot(rayDirection, qvec) * inv_det;
+
+	if (v < 0.0 || u + v > 1.0) {
+		intersectionPoint = float3(0, 0, 0);
+		return false;
+	}
+
+	t = dot(edge2, qvec) * inv_det;
+	intersectionPoint = rayOrigin + rayDirection * t;
+	return true;
+}
+
+[numthreads(512,1,1)]
+void MeshIntersectRay (uint id : SV_DispatchThreadID)
+{
+	float3 pos0 = vertexBuffer[indexBuffer[id * 3 + 0]].position;
+	float3 pos1 = vertexBuffer[indexBuffer[id * 3 + 1]].position;
+	float3 pos2 = vertexBuffer[indexBuffer[id * 3 + 2]].position;
+
+	float t;
+	float3 intersectionPoint;
+
+	if(IntersectTriangle(pos0, pos1, pos2, t, intersectionPoint))
+	{
+		InterlockedAdd(countBuffer[0], 1);
+		intersectBuffer.Append(float4(intersectionPoint, t));
+	}
 }

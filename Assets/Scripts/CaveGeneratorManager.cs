@@ -11,6 +11,7 @@ public class CaveGeneratorManager : MonoBehaviour
     [SerializeField, Range(0.01f, 1)] private float noiseScale;
     [SerializeField, Range(1, 32)] private int amountChunksAroundPlayer;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
+    public Transform sphere;
     public List<RenderTexture> renderTextures;
     private CaveGenerator[][][] chunks;
     private int stepSize;
@@ -85,6 +86,14 @@ public class CaveGeneratorManager : MonoBehaviour
                 }
             }
         }
+        // Vector4 sphereGPU = new Vector4(sphere.position.x, sphere.position.y, sphere.position.z, sphere.lossyScale.x / 2);
+        // Debug.Log(GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, chunks[0][0][0].chunkPosition, sphereGPU));
+        //Debug.Log(Camera.main.transform.right);
+        Vector3 point = GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, Camera.main.transform.position, Camera.main.transform.forward);
+        Debug.Log(point);
+        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward);
+        //Debug.Log(Camera.main.transform.forward);
+        sphere.position = point;
     }
 
     private void AddChunk(Vector3 index)

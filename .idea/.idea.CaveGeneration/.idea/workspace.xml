@@ -5,18 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGenerator.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneratorManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneratorManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/ExtensionMethods.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/ExtensionMethods.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/3DNoise.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/3DNoise.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/Packages/com.unity.testtools.codecoverage/Settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/Packages/com.unity.testtools.codecoverage/Settings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,10 +74,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="15888">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" />
+      <option name="pid" value="15888" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -102,7 +96,10 @@
       <workItem from="1682342022596" duration="303000" />
       <workItem from="1682352849807" duration="4776000" />
       <workItem from="1682418818213" duration="20653000" />
-      <workItem from="1682442713838" duration="6250000" />
+      <workItem from="1682442713838" duration="6306000" />
+      <workItem from="1682687536588" duration="1197000" />
+      <workItem from="1683109227366" duration="321000" />
+      <workItem from="1683109569437" duration="6190000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -111,7 +108,14 @@
       <option name="project" value="LOCAL" />
       <updated>1682342040590</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Got basic generation working with chunks and started work on gpu physics">
+      <created>1682470847595</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1682470847595</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -134,9 +138,27 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+    <MESSAGE value="Got basic generation working with chunks and started work on gpu physics" />
+    <option name="LAST_COMMIT_MESSAGE" value="Got basic generation working with chunks and started work on gpu physics" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/GPUPhysics.cs</url>
+          <line>37</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\GPUPhysics.cs" initialLine="36" containingFunctionPresentation="method 'AreColliding'">
+            <startOffsets>
+              <option value="1642" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1660" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="Type#CaveGenerator+Vertex" memberName="position" />

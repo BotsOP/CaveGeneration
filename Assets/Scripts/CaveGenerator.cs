@@ -7,16 +7,16 @@ public class CaveGenerator
 {
     public Mesh caveMesh;
     public RenderTexture noiseTex;
+    public Vector3 chunkPosition;
     private ComputeShader caveGenerationShader;
     private ComputeShader noiseGenerationShader;
     private Vector3 threadGroupSizeOut;
     private Vector3 threadGroupSize;
     private int kernelIndex;
     private int chunkSize;
-    private Vector3 chunkPosition;
     private Bounds meshBounds;
-    private GraphicsBuffer vertexBuffer;
-    private GraphicsBuffer indexBuffer;
+    public GraphicsBuffer vertexBuffer;
+    public GraphicsBuffer indexBuffer;
     private ComputeBuffer amountVertsBuffer;
     private GraphicsBuffer appendTrianglesBuffer;
     private MeshFilter meshFilter;
