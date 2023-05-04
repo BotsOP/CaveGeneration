@@ -10,12 +10,14 @@ public class CaveGeneratorManager : MonoBehaviour
     [SerializeField] private int chunkSize;
     [SerializeField, Range(0.01f, 1)] private float isoLevel;
     [SerializeField, Range(0.01f, 1)] private float noiseScale;
+    [SerializeField, Range(1, 32)] private float carveSize;
     [SerializeField, Range(1, 32)] private int amountChunksHorizontal;
     [SerializeField, Range(1, 32)] private int amountChunksVertical;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
     public Transform sphere;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
+    private CaveTerrainCarver terrainCarver;
     private Vector3[] caveBounds;
     private float caveWidth;
     private int stepSize;
@@ -34,7 +36,7 @@ public class CaveGeneratorManager : MonoBehaviour
         
         chunks = new CaveChunk[amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal];
         physicsManager = new CavePhysicsManager(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical);
-
+        terrainCarver = new CaveTerrainCarver(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize);
 
         for (int i = 0; i < chunks.GetLength(0); i++)
         {
@@ -82,7 +84,7 @@ public class CaveGeneratorManager : MonoBehaviour
                         if (ReferenceEquals(chunks[i, j, k], null))
                             continue;
                         
-                        chunks[i, j, k].Initialize(NoiseScale);
+                        //chunks[i, j, k].Initialize(NoiseScale);
                         chunks[i, j, k].GenerateMesh(isoLevel);
                     }
                 }
@@ -108,12 +110,22 @@ public class CaveGeneratorManager : MonoBehaviour
         {
             AddChunksBackward();
         }
-        
-        // Vector4 sphereGPU = new Vector4(sphere.position.x, sphere.position.y, sphere.position.z, sphere.lossyScale.x / 2);
-        // Debug.Log(GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, chunks[0][0][0].chunkPosition, sphereGPU));
+
         Vector3 point = physicsManager.Raycast(playerTransform.position, playerTransform.forward * 1000);
         Debug.DrawRay(playerTransform.position, playerTransform.forward * 1000);
         sphere.position = point;
+        if (Input.GetMouseButton(0))
+        {
+            terrainCarver.RemoveTerrain(point, carveSize);
+        }
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            terrainCarver.FillTerrain(point, carveSize);
+        }
+        
+        // Vector4 sphereGPU = new Vector4(sphere.position.x, sphere.position.y, sphere.position.z, sphere.lossyScale.x / 2);
+        // Debug.Log(GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, chunks[0][0][0].chunkPosition, sphereGPU));
+        
     }
     private void PlaceChunksAroundPlayer(Vector3 playerChunkIndex)
     {

@@ -4,17 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="Got infinite chunk generation working">
+    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="Got proper raycasting working with my cave terrain">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MeshContainer.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/MeshContainer.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGenerator.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGeneratorManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGeneratorManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/CavePhysicsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/CavePhysicsManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Settings/SampleSceneProfile.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/SampleSceneProfile.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/CavePhysicsManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/CavePhysicsManager.cs.meta" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,12 +19,14 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ExtensionMethods.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/GPUPhysics/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/Resources/3DNoise.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/Includes/Noise.compute" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Exarion/Assets/Scripts/Managers/ExtensionMethods.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../GeometryTestLab/Assets/Scripts/GpuGeometry/NewVine.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../VAT_Converter/Assets/Scripts/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
@@ -130,7 +128,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683197623411</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Got proper raycasting working with my cave terrain">
+      <created>1683208512996</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1683208512996</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,20 +160,21 @@
     <MESSAGE value="initial commit" />
     <MESSAGE value="Got basic generation working with chunks and started work on gpu physics" />
     <MESSAGE value="Got infinite chunk generation working" />
-    <option name="LAST_COMMIT_MESSAGE" value="Got infinite chunk generation working" />
+    <MESSAGE value="Got proper raycasting working with my cave terrain" />
+    <option name="LAST_COMMIT_MESSAGE" value="Got proper raycasting working with my cave terrain" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs</url>
-          <line>91</line>
+          <line>94</line>
           <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\GPUPhysics\GPUPhysics.cs" initialLine="85" containingFunctionPresentation="method 'RayIntersectMesh'">
             <startOffsets>
-              <option value="3677" />
+              <option value="3788" />
             </startOffsets>
             <endOffsets>
-              <option value="3690" />
+              <option value="3801" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="21" />

@@ -100,7 +100,7 @@ public class CaveChunk
         noiseTex.Release();
     }
 
-    public RenderTexture Initialize(float _noiseScale)
+    public void Initialize(float _noiseScale)
     {
         noiseGenerationShader.GetKernelThreadGroupSizes(0, out uint threadGroupSizeX, out uint threadGroupSizeY, out uint threadGroupSizeZ);
         
@@ -112,7 +112,6 @@ public class CaveChunk
         noiseGenerationShader.SetFloat("noiseScale", chunkSize * _noiseScale);
         noiseGenerationShader.SetVector("noiseOffset", chunkPosition);
         noiseGenerationShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
-        return noiseTex;
     }
 
     public void GenerateMesh(float isoLevel)
@@ -145,6 +144,8 @@ public class CaveChunk
         caveMesh.SetVertices(new Vector3[amountVerts]);
         caveMesh.SetIndices(new int[amountVerts], MeshTopology.Triangles, 0);
 
+        vertexBuffer?.Dispose();
+        indexBuffer?.Dispose();
         vertexBuffer = caveMesh.GetVertexBuffer(0);
         indexBuffer = caveMesh.GetIndexBuffer();
         

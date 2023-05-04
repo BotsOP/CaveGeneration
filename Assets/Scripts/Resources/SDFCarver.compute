@@ -1,0 +1,27 @@
+#pragma kernel RemoveTerrain
+#pragma kernel FillTerrain
+
+RWTexture3D<float> noiseTex;
+float carveSize;
+float3 carvePos;
+
+//these functions do not yet work with other isolevels
+[numthreads(8,8,8)]
+void RemoveTerrain (uint3 id : SV_DispatchThreadID)
+{
+	float dist = distance(float3(id), carvePos);
+	if(dist < carveSize)
+	{
+		noiseTex[id] = 1 - saturate(dist / carveSize) / 2;
+	}
+}
+
+[numthreads(8,8,8)]
+void FillTerrain (uint3 id : SV_DispatchThreadID)
+{
+	float dist = distance(float3(id), carvePos);
+	if(dist < carveSize)
+	{
+		noiseTex[id] = saturate(dist / carveSize) / 2;
+	}
+}
