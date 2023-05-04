@@ -38,23 +38,24 @@ public static class GPUPhysics
         return result > 0;
     }
     
-    public static Vector3 AreColliding(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _rayOrigin, Vector3 _rayDirection)
+    public static Vector3 RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, Vector3 _rayOrigin, Vector3 _rayDirection)
     {
         countBuffer.SetData(new int[1]);
         intersectBuffer.SetCounterValue(0);
-        
+
         gpuPhysicsShader.GetKernelThreadGroupSizes(1, out uint threadGroupSizeX, out uint _, out uint _);
 
         int amountTriangles = _indexBuffer.count / 3;
         Vector3 threadGroupSize = Vector3.one;
         threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
-        
+
         gpuPhysicsShader.SetBuffer(1, "vertexBuffer", _vertexBuffer);
         gpuPhysicsShader.SetBuffer(1, "indexBuffer", _indexBuffer);
         gpuPhysicsShader.SetBuffer(1, "countBuffer", countBuffer);
         gpuPhysicsShader.SetBuffer(1, "intersectBuffer", intersectBuffer);
         gpuPhysicsShader.SetVector("rayOrigin", _rayOrigin);
         gpuPhysicsShader.SetVector("rayDirection", _rayDirection);
+        gpuPhysicsShader.SetVector("meshOffset", _meshPos);
         
         gpuPhysicsShader.Dispatch(1, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
         
@@ -66,19 +67,28 @@ public static class GPUPhysics
         {
             return new Vector3(0, -1000, 0);
         }
-
+        
         Vector4[] intersections = new Vector4[counter];
         intersectBuffer.GetData(intersections);
+        
         float lowestT = float.MaxValue;
         Vector3 point = new Vector3(0, -1000, 0);
+        
         for (var i = 0; i < counter; i++)
         {
             var intersect = intersections[i];
+            
             Vector3 pos = new Vector3(intersect.x, intersect.y, intersect.z);
+            
+            if (Vector3.Dot(_rayDirection.normalized, pos - _rayOrigin) < 0)
+            {
+                continue;
+            }
+            
             if (Vector3.Distance(_rayOrigin, pos) < lowestT)
             {
                 lowestT = Vector3.Distance(_rayOrigin, pos);
-                point = intersect;
+                point = pos;
             }
         }
 

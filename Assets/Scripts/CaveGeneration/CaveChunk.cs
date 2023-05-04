@@ -3,12 +3,13 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
-public class CaveGenerator
+public class CaveChunk
 {
     public Mesh caveMesh;
     public RenderTexture noiseTex;
     public Vector3 chunkPosition;
     public GameObject gameObject;
+    public MeshFilter meshFilter;
     private ComputeShader caveGenerationShader;
     private ComputeShader noiseGenerationShader;
     private Vector3 threadGroupSizeOut;
@@ -20,14 +21,47 @@ public class CaveGenerator
     public GraphicsBuffer indexBuffer;
     private ComputeBuffer amountVertsBuffer;
     private GraphicsBuffer appendTrianglesBuffer;
-    private MeshFilter meshFilter;
 
-    public CaveGenerator(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, MeshFilter _meshFilter)
+    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject)
+    {
+        chunkSize = (int)_chunkSize;
+        chunkPosition = _chunkPosition;
+        meshFilter = _gameObject.GetComponent<MeshFilter>();
+        gameObject = _gameObject;
+        caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
+        noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
+        
+        caveMesh = new Mesh();
+        caveMesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+        caveMesh.indexBufferTarget |= GraphicsBuffer.Target.Structured;
+        caveMesh.AddVertexAttribute(new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, dimension: 3));
+        caveMesh.indexFormat = IndexFormat.UInt32;
+        
+        float boundsSize = _chunkSize / 2;
+        meshBounds = new Bounds(new Vector3(boundsSize, boundsSize, boundsSize), new Vector3(_chunkSize, _chunkSize, _chunkSize));
+        meshFilter.mesh = caveMesh;
+
+        noiseTex = new RenderTexture(chunkSize, chunkSize, 0, RenderTextureFormat.R8)
+        {
+            dimension = TextureDimension.Tex3D,
+            volumeDepth = chunkSize,
+            enableRandomWrite = true,
+        };
+        
+        amountVertsBuffer = new ComputeBuffer(1, sizeof(uint));
+        amountVertsBuffer.SetData(new [] { 0 });
+        int amountMaxVerts = (int)Mathf.Pow(chunkSize, 3) * 3;
+        appendTrianglesBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, amountMaxVerts, sizeof(float) * (3 + 3));
+
+        Initialize(_noiseScale);
+        GenerateMesh(_isoLevel);
+    }
+    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter)
     {
         chunkSize = (int)_chunkSize;
         chunkPosition = _chunkPosition;
         meshFilter = _meshFilter;
-        gameObject = _meshFilter.gameObject;
+        gameObject = _gameObject;
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
         
@@ -37,8 +71,9 @@ public class CaveGenerator
         caveMesh.AddVertexAttribute(new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, dimension: 3));
         caveMesh.indexFormat = IndexFormat.UInt32;
         float boundsSize = _chunkSize / 2;
+        
         meshBounds = new Bounds(new Vector3(boundsSize, boundsSize, boundsSize), new Vector3(_chunkSize, _chunkSize, _chunkSize));
-        meshFilter.sharedMesh = caveMesh;
+        meshFilter.mesh = caveMesh;
 
         noiseTex = new RenderTexture(chunkSize, chunkSize, 0, RenderTextureFormat.R8)
         {
