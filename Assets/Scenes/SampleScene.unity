@@ -525,14 +525,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 847ce5c7a25d1554ab0fc5aa5fb3ea93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerTransform: {fileID: 1687258585}
   meshContainer: {fileID: 4393015725623752461, guid: 2aff5e84960ff994b919dba02b00e772, type: 3}
   chunkSize: 32
   isoLevel: 0.5
   noiseScale: 0.5
-  amountChunksAroundPlayer: 8
+  amountChunksHorizontal: 8
+  amountChunksVertical: 4
   caveScale: 1
   sphere: {fileID: 1409655847}
-  renderTextures: []
 --- !u!4 &1375923499
 Transform:
   m_ObjectHideFlags: 0
@@ -811,8 +812,8 @@ Camera:
   m_GameObject: {fileID: 1687258581}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -981,7 +982,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 4.5905e-41, y: -6.7620066e+12, z: 4.5905e-41, w: 9.403955e-38}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0

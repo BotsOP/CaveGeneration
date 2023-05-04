@@ -9,6 +9,13 @@ public static class ExtensionMethods
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
+    public static Vector3 Remap (this Vector3 value, Vector3 from1, Vector3 to1, Vector3 from2, Vector3 to2) 
+    {
+        float x = (value.x - from1.x) / (to1.x - from1.x) * (to2.x - from2.x) + from2.x;
+        float y = (value.y - from1.y) / (to1.y - from1.y) * (to2.y - from2.y) + from2.y;
+        float z = (value.z - from1.z) / (to1.z - from1.z) * (to2.z - from2.z) + from2.z;
+        return new Vector3(x, y, z);
+    }
     public static float Remap (this int value, float from1, float to1, float from2, float to2) 
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;

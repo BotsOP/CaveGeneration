@@ -8,6 +8,7 @@ public class CaveGenerator
     public Mesh caveMesh;
     public RenderTexture noiseTex;
     public Vector3 chunkPosition;
+    public GameObject gameObject;
     private ComputeShader caveGenerationShader;
     private ComputeShader noiseGenerationShader;
     private Vector3 threadGroupSizeOut;
@@ -26,6 +27,7 @@ public class CaveGenerator
         chunkSize = (int)_chunkSize;
         chunkPosition = _chunkPosition;
         meshFilter = _meshFilter;
+        gameObject = _meshFilter.gameObject;
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
         
@@ -60,6 +62,7 @@ public class CaveGenerator
         vertexBuffer?.Dispose();
         indexBuffer?.Dispose();
         amountVertsBuffer?.Dispose();
+        noiseTex.Release();
     }
 
     public RenderTexture Initialize(float _noiseScale)
