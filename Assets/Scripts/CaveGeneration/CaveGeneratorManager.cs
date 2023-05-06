@@ -14,6 +14,8 @@ public class CaveGeneratorManager : MonoBehaviour
     [SerializeField, Range(1, 32)] private int amountChunksHorizontal;
     [SerializeField, Range(1, 32)] private int amountChunksVertical;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
+    [SerializeField] private Transform[] originPoints;
+    [SerializeField] private Transform[] spheresPos;
     public Transform sphere;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
@@ -84,7 +86,6 @@ public class CaveGeneratorManager : MonoBehaviour
                         if (ReferenceEquals(chunks[i, j, k], null))
                             continue;
                         
-                        //chunks[i, j, k].Initialize(NoiseScale);
                         chunks[i, j, k].GenerateMesh(isoLevel);
                     }
                 }
@@ -109,6 +110,18 @@ public class CaveGeneratorManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Z))
         {
             AddChunksBackward();
+        }
+
+        List<Ray> rays = new List<Ray>();
+        for (int i = 0; i < originPoints.Length; i++)
+        {
+            Ray ray = new Ray(originPoints[i].position, Vector3.down * 100, i);
+            rays.Add(ray);
+        }
+        Vector3[] points = physicsManager.Raycast(rays);
+        for (int i = 0; i < originPoints.Length; i++)
+        {
+            spheresPos[i].position = points[i];
         }
 
         Vector3 point = physicsManager.Raycast(playerTransform.position, playerTransform.forward * 1000);
@@ -316,4 +329,18 @@ public class CaveGeneratorManager : MonoBehaviour
     }
 
     #endregion
+}
+
+public struct Ray
+{
+    public Vector3 origin;
+    public Vector3 direction;
+    public int index;
+
+    public Ray(Vector3 _origin, Vector3 _direction, int _index)
+    {
+        origin = _origin;
+        direction = _direction;
+        index = _index;
+    }
 }

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class GPUPhysics
@@ -93,5 +95,74 @@ public static class GPUPhysics
         }
 
         return point;
+    }
+
+    public static Vector4[] RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, List<Ray> _rays)
+    {
+        countBuffer.SetData(new int[1]);
+        intersectBuffer.SetCounterValue(0);
+
+        gpuPhysicsShader.GetKernelThreadGroupSizes(2, out uint threadGroupSizeX, out uint _, out uint _);
+
+        int amountTriangles = _indexBuffer.count / 3;
+        Vector3 threadGroupSize = Vector3.one;
+        threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
+
+        int amountRays = _rays.Count;
+        ComputeBuffer rays = new ComputeBuffer(amountRays, sizeof(float) * 6 + sizeof(int), ComputeBufferType.Structured);
+        rays.SetData(_rays);
+
+        gpuPhysicsShader.SetBuffer(2, "vertexBuffer", _vertexBuffer);
+        gpuPhysicsShader.SetBuffer(2, "indexBuffer", _indexBuffer);
+        gpuPhysicsShader.SetBuffer(2, "countBuffer", countBuffer);
+        gpuPhysicsShader.SetBuffer(2, "intersectBuffer", intersectBuffer);
+        gpuPhysicsShader.SetBuffer(2, "rays", rays);
+        gpuPhysicsShader.SetVector("meshOffset", _meshPos);
+        gpuPhysicsShader.SetInt("amountRays", _rays.Count - 1);
+
+        gpuPhysicsShader.Dispatch(2, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
+        
+        rays.Dispose();
+
+        int[] counters = new int[1];
+        countBuffer.GetData(counters);
+        int counter = counters[0];
+
+        if (counter <= 0)
+        {
+            return Array.Empty<Vector4>();
+        }
+
+        Vector4[] intersections = new Vector4[counter];
+        intersectBuffer.GetData(intersections);
+
+        float[] lowestDist = new float[amountRays];
+        Array.Fill(lowestDist, float.MaxValue);
+
+        Vector4[] points = new Vector4[amountRays];
+        for (int i = 0; i < amountRays; i++)
+        {
+            points[i] = new Vector4(0, -1000, 0, _rays[i].index);
+        }
+
+        for (int i = 0; i < counter; i++)
+        {
+            int rayIndex = (int)intersections[i].w;
+            Vector3 pos = new Vector3(intersections[i].x, intersections[i].y, intersections[i].z);
+            
+            if (Vector3.Dot(_rays[rayIndex].direction.normalized, pos - _rays[rayIndex].origin) < 0)
+            {
+                continue;
+            }
+            
+            float dist = Vector3.Distance(_rays[rayIndex].origin, pos);
+            if (Vector3.Distance(_rays[rayIndex].origin, pos) < lowestDist[rayIndex])
+            {
+                lowestDist[rayIndex] = dist;
+                points[rayIndex] = new Vector4(pos.x, pos.y, pos.z, _rays[rayIndex].index);
+            }
+        }
+
+        return points;
     }
 }
