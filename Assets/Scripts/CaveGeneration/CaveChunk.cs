@@ -1,6 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 public class CaveChunk
@@ -10,6 +9,7 @@ public class CaveChunk
     public Vector3 chunkPosition;
     public GameObject gameObject;
     public MeshFilter meshFilter;
+    public List<GameObject> decorations;
     private ComputeShader caveGenerationShader;
     private ComputeShader noiseGenerationShader;
     private Vector3 threadGroupSizeOut;
@@ -22,12 +22,13 @@ public class CaveChunk
     private ComputeBuffer amountVertsBuffer;
     private GraphicsBuffer appendTrianglesBuffer;
 
-    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject)
+    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, int _amountDecorations, GameObject _gameObject, GameObject _decorationObject)
     {
         chunkSize = (int)_chunkSize;
         chunkPosition = _chunkPosition;
         meshFilter = _gameObject.GetComponent<MeshFilter>();
         gameObject = _gameObject;
+        decorations = new List<GameObject>();
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
         
@@ -55,13 +56,15 @@ public class CaveChunk
 
         Initialize(_noiseScale);
         GenerateMesh(_isoLevel);
+        SpawnDecorations(_decorationObject);
     }
-    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter)
+    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter, List<GameObject> _decorations)
     {
         chunkSize = (int)_chunkSize;
         chunkPosition = _chunkPosition;
         meshFilter = _meshFilter;
         gameObject = _gameObject;
+        decorations = _decorations;
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
         
@@ -89,6 +92,7 @@ public class CaveChunk
 
         Initialize(_noiseScale);
         GenerateMesh(_isoLevel);
+        SpawnDecorations();
     }
 
     public void OnDestroy()
@@ -160,17 +164,64 @@ public class CaveChunk
         caveMesh.bounds = meshBounds;
         amountVertsBuffer.SetData(new [] { 0 });
     }
+
+    private void SpawnDecorations(GameObject _decoration)
+    {
+        Vector3 rayOrigin = chunkPosition + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
+        RayOutput rayOutput;
+        int maxAmountOfRays = 10;
+        int index = 0;
+        while (true)
+        {
+            Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
+            if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, chunkPosition, rayOrigin, rayDirection, out rayOutput))
+            {
+                GameObject tempDeco = Object.Instantiate(_decoration, rayOutput.position, Quaternion.LookRotation(rayOutput.normal));
+                decorations.Add(tempDeco);
+                return;
+            }
+
+            index++;
+            if (index > maxAmountOfRays)
+            {
+                Debug.LogWarning($"After shooting {maxAmountOfRays} rays still couldnt hit anything");
+                return;
+            }
+        }
+        
+    }
+    private void SpawnDecorations()
+    {
+        foreach (var decoration in decorations)
+        {
+            Vector3 rayOrigin = chunkPosition + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
+            RayOutput rayOutput;
+            int maxAmountOfRays = 10;
+            int index = 0;
+            while (true)
+            {
+                Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
+                if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, chunkPosition, rayOrigin, rayDirection, out rayOutput))
+                {
+                    decoration.transform.position = rayOutput.position;
+                    decoration.transform.rotation = Quaternion.LookRotation(rayOutput.normal);
+                    return;
+                }
+
+                index++;
+                if (index > maxAmountOfRays)
+                {
+                    Debug.LogWarning($"After shooting {maxAmountOfRays} rays still couldnt hit anything2");
+                    return;
+                }
+            }
+        }
+    }
     
     struct Vertex
     {
         public Vector3 position;
         public Vector3 normal;
-
-        public Vertex(Vector3 _position, Vector3 _normal)
-        {
-            position = _position;
-            normal = _normal;
-        }
     }
     
 }

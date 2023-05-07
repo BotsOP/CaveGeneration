@@ -9,14 +9,16 @@ public class CaveTerrainCarver
     private int amountChunksHorizontal;
     private int amountChunksVertical;
     private ComputeShader caveCarveShader;
+    private LayerMask caveMask;
     Vector3 threadGroupSize;
 
-    public CaveTerrainCarver(CaveChunk[,,] _chunks, Vector3[] _caveBounds, int _amountChunksHorizontal, int _amountChunksVertical, int _chunkSize)
+    public CaveTerrainCarver(CaveChunk[,,] _chunks, Vector3[] _caveBounds, int _amountChunksHorizontal, int _amountChunksVertical, int _chunkSize, LayerMask _caveMask)
     {
         chunks = _chunks;
         caveBounds = _caveBounds;
         amountChunksHorizontal = _amountChunksHorizontal;
         amountChunksVertical = _amountChunksVertical;
+        caveMask = _caveMask;
         caveCarveShader = Resources.Load<ComputeShader>("SDFCarver");
         
         caveCarveShader.GetKernelThreadGroupSizes(0, out uint threadGroupSizeX, out uint threadGroupSizeY, out uint threadGroupSizeZ);
@@ -27,9 +29,9 @@ public class CaveTerrainCarver
     }
 
     //These functions do not yet work with other isolevels
-    public void RemoveTerrain(Vector3 _pos, float _carveSize)
+    public void RemoveTerrain(Vector3 _pos, float _carveSize, float _carveSpeed)
     {
-        Collider[] chunksHit = Physics.OverlapSphere(_pos, _carveSize);
+        Collider[] chunksHit = Physics.OverlapSphere(_pos, _carveSize, caveMask);
         foreach (var chunkCollider in chunksHit)
         {
             Vector3 chunkIndex = GetChunkIndex(chunkCollider.transform.position);
@@ -39,6 +41,7 @@ public class CaveTerrainCarver
             caveCarveShader.SetTexture(0, "noiseTex", chunk.noiseTex);
             caveCarveShader.SetVector("carvePos", carvePos);
             caveCarveShader.SetFloat("carveSize", _carveSize);
+            caveCarveShader.SetFloat("carveSpeed", _carveSpeed);
             
             caveCarveShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
             chunk.GenerateMesh(0.5f);

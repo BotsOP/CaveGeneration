@@ -14,7 +14,7 @@ public static class GPUPhysics
         gpuPhysicsShader = Resources.Load<ComputeShader>("GPUPhysicsShader");
         resultBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
         countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
-        intersectBuffer = new ComputeBuffer(20, sizeof(float) * 6, ComputeBufferType.Append);
+        intersectBuffer = new ComputeBuffer(100, sizeof(float) * 6, ComputeBufferType.Append);
     }
 
     public static bool AreColliding(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _sdfPos, Vector4 _circle)
@@ -45,6 +45,7 @@ public static class GPUPhysics
         countBuffer.SetData(new int[1]);
         intersectBuffer.SetCounterValue(0);
         _rayOutput = new RayOutput();
+        float rayLength = _rayDirection.magnitude;
 
         gpuPhysicsShader.GetKernelThreadGroupSizes(1, out uint threadGroupSizeX, out uint _, out uint _);
 
@@ -52,15 +53,16 @@ public static class GPUPhysics
         Vector3 threadGroupSize = Vector3.one;
         threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
 
+        _rayOrigin -= _meshPos;
         gpuPhysicsShader.SetBuffer(1, "vertexBuffer", _vertexBuffer);
         gpuPhysicsShader.SetBuffer(1, "indexBuffer", _indexBuffer);
         gpuPhysicsShader.SetBuffer(1, "countBuffer", countBuffer);
         gpuPhysicsShader.SetBuffer(1, "intersectBuffer", intersectBuffer);
         gpuPhysicsShader.SetVector("rayOrigin", _rayOrigin);
         gpuPhysicsShader.SetVector("rayDirection", _rayDirection);
-        gpuPhysicsShader.SetVector("meshOffset", _meshPos);
         
         gpuPhysicsShader.Dispatch(1, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
+        _rayOrigin += _meshPos;
         
         int[] counters = new int[1];
         countBuffer.GetData(counters);
@@ -81,13 +83,21 @@ public static class GPUPhysics
         for (var i = 0; i < counter; i++)
         {
             var intersect = intersections[i];
-            
-            if (Vector3.Dot(_rayDirection.normalized, intersect.position - _rayOrigin) < 0)
+            intersect.position += _meshPos;
+
+            float dot = Vector3.Dot(_rayDirection.normalized, (intersect.position - _rayOrigin).normalized);
+            if (dot < 0)
+            {
+                continue;
+            }
+
+            float dist = Vector3.Distance(_rayOrigin, intersect.position);
+            if (dist > rayLength)
             {
                 continue;
             }
             
-            if (Vector3.Distance(_rayOrigin, intersect.position) < lowestT)
+            if (dist < lowestT)
             {
                 lowestT = Vector3.Distance(_rayOrigin, intersect.position);
                 point = intersect.position;
@@ -95,7 +105,7 @@ public static class GPUPhysics
             }
         }
 
-        if (point.y < 0)
+        if (point.y < -999)
         {
             return false;
         }

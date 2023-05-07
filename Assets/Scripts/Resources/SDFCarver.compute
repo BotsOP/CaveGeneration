@@ -3,6 +3,7 @@
 
 RWTexture3D<float> noiseTex;
 float carveSize;
+float carveSpeed;
 float3 carvePos;
 
 //these functions do not yet work with other isolevels
@@ -12,7 +13,7 @@ void RemoveTerrain (uint3 id : SV_DispatchThreadID)
 	float dist = distance(float3(id), carvePos);
 	if(dist < carveSize)
 	{
-		noiseTex[id] = noiseTex[id] + 1;
+		noiseTex[id] = noiseTex[id] + carveSpeed;
 	}
 }
 

@@ -28,6 +28,7 @@ public class CavePhysicsManager
         while (true)
         {
             Vector3 chunkIndex = GetChunkIndex(localRayOrigin);
+            chunkIndex = new Vector3((int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z);
             
             if (chunkIndex.x < 0 || chunkIndex.y < 0 || chunkIndex.z < 0 || 
                 chunkIndex.x > amountChunksHorizontal - 1 || chunkIndex.y > amountChunksVertical - 1 || chunkIndex.z > amountChunksHorizontal - 1)

@@ -68,7 +68,6 @@ struct RayOutput
 
 float3 rayOrigin;
 float3 rayDirection;
-float3 meshOffset;
 RWStructuredBuffer<int> countBuffer;
 AppendStructuredBuffer<RayOutput> intersectBuffer;
 
@@ -101,9 +100,9 @@ bool RayTriangleIntersect(float3 V0, float3 V1, float3 V2, out float Distance)
 [numthreads(512,1,1)]
 void MeshIntersectRay (uint id : SV_DispatchThreadID)
 {
-	float3 pos0 = vertexBuffer[indexBuffer[id * 3 + 0]].position + meshOffset;
-	float3 pos1 = vertexBuffer[indexBuffer[id * 3 + 1]].position + meshOffset;
-	float3 pos2 = vertexBuffer[indexBuffer[id * 3 + 2]].position + meshOffset;
+	float3 pos0 = vertexBuffer[indexBuffer[id * 3 + 0]].position;
+	float3 pos1 = vertexBuffer[indexBuffer[id * 3 + 1]].position;
+	float3 pos2 = vertexBuffer[indexBuffer[id * 3 + 2]].position;
 
 	float t;
 	if(RayTriangleIntersect(pos0, pos1, pos2, t))
