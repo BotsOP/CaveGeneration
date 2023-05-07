@@ -24,10 +24,10 @@ public class CavePhysicsManager
         int index = 0;
         int amountChunksToCheck = 10;
         
-        RayOutput rayOutput = new RayOutput();
+        Vector3 localRayOrigin = _rayOrigin;
         while (true)
         {
-            Vector3 chunkIndex = GetChunkIndex(_rayOrigin);
+            Vector3 chunkIndex = GetChunkIndex(localRayOrigin);
             
             if (chunkIndex.x < 0 || chunkIndex.y < 0 || chunkIndex.z < 0 || 
                 chunkIndex.x > amountChunksHorizontal - 1 || chunkIndex.y > amountChunksVertical - 1 || chunkIndex.z > amountChunksHorizontal - 1)
@@ -36,16 +36,16 @@ public class CavePhysicsManager
             }
             
             CaveChunk chunk = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z];
-            if (GPUPhysics.RayIntersectMesh(chunk.vertexBuffer, chunk.indexBuffer, chunk.chunkPosition, _rayOrigin, _rayDirection, out rayOutput))
+            if (GPUPhysics.RayIntersectMesh(chunk.vertexBuffer, chunk.indexBuffer, chunk.chunkPosition, _rayOrigin, _rayDirection, out var rayOutput))
             {
                 _rayOutput = rayOutput;
                 return true;
             }
             
             RaycastHit hit;
-            if (Physics.Raycast(_rayOrigin, _rayDirection, out hit, Mathf.Infinity))
+            if (Physics.Raycast(localRayOrigin, _rayDirection, out hit, Mathf.Infinity))
             {
-                _rayOrigin = hit.point + _rayDirection.normalized / 10;
+                localRayOrigin = hit.point + _rayDirection.normalized / 10;
             }
             else
             {
