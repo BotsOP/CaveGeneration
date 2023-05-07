@@ -14,7 +14,7 @@ public static class GPUPhysics
         gpuPhysicsShader = Resources.Load<ComputeShader>("GPUPhysicsShader");
         resultBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
         countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
-        intersectBuffer = new ComputeBuffer(100, sizeof(float) * 4, ComputeBufferType.Append);
+        intersectBuffer = new ComputeBuffer(20, sizeof(float) * 6, ComputeBufferType.Append);
     }
 
     public static bool AreColliding(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _sdfPos, Vector4 _circle)
@@ -40,10 +40,11 @@ public static class GPUPhysics
         return result > 0;
     }
     
-    public static Vector3 RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, Vector3 _rayOrigin, Vector3 _rayDirection)
+    public static bool RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, Vector3 _rayOrigin, Vector3 _rayDirection, out RayOutput _rayOutput)
     {
         countBuffer.SetData(new int[1]);
         intersectBuffer.SetCounterValue(0);
+        _rayOutput = new RayOutput();
 
         gpuPhysicsShader.GetKernelThreadGroupSizes(1, out uint threadGroupSizeX, out uint _, out uint _);
 
@@ -67,102 +68,47 @@ public static class GPUPhysics
 
         if (counter <= 0)
         {
-            return new Vector3(0, -1000, 0);
+            return false;
         }
         
-        Vector4[] intersections = new Vector4[counter];
+        RayOutput[] intersections = new RayOutput[counter];
         intersectBuffer.GetData(intersections);
         
         float lowestT = float.MaxValue;
         Vector3 point = new Vector3(0, -1000, 0);
+        Vector3 normal = new Vector3(0, -1000, 0);
         
         for (var i = 0; i < counter; i++)
         {
             var intersect = intersections[i];
             
-            Vector3 pos = new Vector3(intersect.x, intersect.y, intersect.z);
-            
-            if (Vector3.Dot(_rayDirection.normalized, pos - _rayOrigin) < 0)
+            if (Vector3.Dot(_rayDirection.normalized, intersect.position - _rayOrigin) < 0)
             {
                 continue;
             }
             
-            if (Vector3.Distance(_rayOrigin, pos) < lowestT)
+            if (Vector3.Distance(_rayOrigin, intersect.position) < lowestT)
             {
-                lowestT = Vector3.Distance(_rayOrigin, pos);
-                point = pos;
+                lowestT = Vector3.Distance(_rayOrigin, intersect.position);
+                point = intersect.position;
+                normal = intersect.normal;
             }
         }
 
-        return point;
+        if (point.y < 0)
+        {
+            return false;
+        }
+
+        _rayOutput.position = point;
+        _rayOutput.normal = normal;
+
+        return true;
     }
+}
 
-    public static Vector4[] RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, List<Ray> _rays)
-    {
-        countBuffer.SetData(new int[1]);
-        intersectBuffer.SetCounterValue(0);
-
-        gpuPhysicsShader.GetKernelThreadGroupSizes(2, out uint threadGroupSizeX, out uint _, out uint _);
-
-        int amountTriangles = _indexBuffer.count / 3;
-        Vector3 threadGroupSize = Vector3.one;
-        threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
-
-        int amountRays = _rays.Count;
-        ComputeBuffer rays = new ComputeBuffer(amountRays, sizeof(float) * 6 + sizeof(int), ComputeBufferType.Structured);
-        rays.SetData(_rays);
-
-        gpuPhysicsShader.SetBuffer(2, "vertexBuffer", _vertexBuffer);
-        gpuPhysicsShader.SetBuffer(2, "indexBuffer", _indexBuffer);
-        gpuPhysicsShader.SetBuffer(2, "countBuffer", countBuffer);
-        gpuPhysicsShader.SetBuffer(2, "intersectBuffer", intersectBuffer);
-        gpuPhysicsShader.SetBuffer(2, "rays", rays);
-        gpuPhysicsShader.SetVector("meshOffset", _meshPos);
-        gpuPhysicsShader.SetInt("amountRays", _rays.Count - 1);
-
-        gpuPhysicsShader.Dispatch(2, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
-        
-        rays.Dispose();
-
-        int[] counters = new int[1];
-        countBuffer.GetData(counters);
-        int counter = counters[0];
-
-        if (counter <= 0)
-        {
-            return Array.Empty<Vector4>();
-        }
-
-        Vector4[] intersections = new Vector4[counter];
-        intersectBuffer.GetData(intersections);
-
-        float[] lowestDist = new float[amountRays];
-        Array.Fill(lowestDist, float.MaxValue);
-
-        Vector4[] points = new Vector4[amountRays];
-        for (int i = 0; i < amountRays; i++)
-        {
-            points[i] = new Vector4(0, -1000, 0, _rays[i].index);
-        }
-
-        for (int i = 0; i < counter; i++)
-        {
-            int rayIndex = (int)intersections[i].w;
-            Vector3 pos = new Vector3(intersections[i].x, intersections[i].y, intersections[i].z);
-            
-            if (Vector3.Dot(_rays[rayIndex].direction.normalized, pos - _rays[rayIndex].origin) < 0)
-            {
-                continue;
-            }
-            
-            float dist = Vector3.Distance(_rays[rayIndex].origin, pos);
-            if (Vector3.Distance(_rays[rayIndex].origin, pos) < lowestDist[rayIndex])
-            {
-                lowestDist[rayIndex] = dist;
-                points[rayIndex] = new Vector4(pos.x, pos.y, pos.z, _rays[rayIndex].index);
-            }
-        }
-
-        return points;
-    }
+public struct RayOutput
+{
+    public Vector3 position;
+    public Vector3 normal;
 }

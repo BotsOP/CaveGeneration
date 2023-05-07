@@ -1,6 +1,5 @@
 #pragma kernel MeshOverlapSphere
 #pragma kernel MeshIntersectRay
-#pragma kernel MeshIntersectRays
 
 struct Vertex
 {
@@ -61,11 +60,17 @@ void MeshOverlapSphere (uint id : SV_DispatchThreadID)
 	}
 }
 
+struct RayOutput
+{
+	float3 position;
+	float3 normal;
+};
+
 float3 rayOrigin;
 float3 rayDirection;
 float3 meshOffset;
 RWStructuredBuffer<int> countBuffer;
-AppendStructuredBuffer<float4> intersectBuffer;
+AppendStructuredBuffer<RayOutput> intersectBuffer;
 
 bool RayTriangleIntersect(float3 V0, float3 V1, float3 V2, out float Distance)
 {
@@ -104,36 +109,15 @@ void MeshIntersectRay (uint id : SV_DispatchThreadID)
 	if(RayTriangleIntersect(pos0, pos1, pos2, t))
 	{
 		InterlockedAdd(countBuffer[0], 1);
-		intersectBuffer.Append(float4(rayOrigin + rayDirection * t, t));
-	}
-}
-
-struct ray
-{
-	float3 origin;
-	float3 direction;
-	int index;
-};
-
-StructuredBuffer<ray> rays;
-int amountRays;
-
-[numthreads(128,4,1)]
-void MeshIntersectRays (uint2 id : SV_DispatchThreadID)
-{
-	if(id.y > amountRays)
-	{
-		return;
-	}
-	
-	float3 pos0 = vertexBuffer[indexBuffer[id.x * 3 + 0]].position + meshOffset;
-	float3 pos1 = vertexBuffer[indexBuffer[id.x * 3 + 1]].position + meshOffset;
-	float3 pos2 = vertexBuffer[indexBuffer[id.x * 3 + 2]].position + meshOffset;
-
-	float t;
-	if(RayTriangleIntersect(pos0, pos1, pos2, t))
-	{
-		InterlockedAdd(countBuffer[0], 1);
-		intersectBuffer.Append(float4(rays[id.y].origin + rays[id.y].direction * t, (float)id.y));
+		RayOutput rayOutput;
+		rayOutput.position = rayOrigin + rayDirection * t;
+		
+		float3 edge1 = pos1 - pos0;
+		float3 edge2 = pos2 - pos0;
+		float3 normal = cross(edge1, edge2);
+		normalize(normal);
+		rayOutput.normal = normal;
+		
+		intersectBuffer.Append(rayOutput);
 	}
 }

@@ -105,7 +105,6 @@ void GenerateCave (uint3 id : SV_DispatchThreadID)
         triangle1.vertex2 = vertex2;
         triangle1.vertex3 = vertex3;
 
-
         appendTriangleBuffer.Append(triangle1);
         
         InterlockedAdd(amountTrianglesBuffer[0], 1);

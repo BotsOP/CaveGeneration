@@ -12,6 +12,7 @@
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGeneratorManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveGeneratorManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" afterDir="false" />
     </list>
@@ -178,23 +179,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Got fast carving working" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs</url>
-          <line>165</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\GPUPhysics\GPUPhysics.cs" initialLine="165" containingFunctionPresentation="method 'RayIntersectMesh'">
-            <startOffsets>
-              <option value="6496" />
-            </startOffsets>
-            <endOffsets>
-              <option value="6510" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="33" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="Type#Ray" memberName="index" />

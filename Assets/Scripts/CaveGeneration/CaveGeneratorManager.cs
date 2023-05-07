@@ -14,8 +14,6 @@ public class CaveGeneratorManager : MonoBehaviour
     [SerializeField, Range(1, 32)] private int amountChunksHorizontal;
     [SerializeField, Range(1, 32)] private int amountChunksVertical;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
-    [SerializeField] private Transform[] originPoints;
-    [SerializeField] private Transform[] spheresPos;
     public Transform sphere;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
@@ -112,33 +110,23 @@ public class CaveGeneratorManager : MonoBehaviour
             AddChunksBackward();
         }
 
-        List<Ray> rays = new List<Ray>();
-        for (int i = 0; i < originPoints.Length; i++)
+        if (physicsManager.Raycast(playerTransform.position, playerTransform.forward * 1000, out var rayOutput))
         {
-            Ray ray = new Ray(originPoints[i].position, Vector3.down * 100, i);
-            rays.Add(ray);
-        }
-        Vector3[] points = physicsManager.Raycast(rays);
-        for (int i = 0; i < originPoints.Length; i++)
-        {
-            spheresPos[i].position = points[i];
-        }
-
-        Vector3 point = physicsManager.Raycast(playerTransform.position, playerTransform.forward * 1000);
-        Debug.DrawRay(playerTransform.position, playerTransform.forward * 1000);
-        sphere.position = point;
-        if (Input.GetMouseButton(0))
-        {
-            terrainCarver.RemoveTerrain(point, carveSize);
-        }
-        if (Input.GetKeyDown(KeyCode.LeftControl))
-        {
-            terrainCarver.FillTerrain(point, carveSize);
+            Debug.DrawRay(playerTransform.position, playerTransform.forward * 1000);
+            sphere.position = rayOutput.position;
+            sphere.rotation = Quaternion.LookRotation(rayOutput.normal);
+            if (Input.GetMouseButton(0))
+            {
+                terrainCarver.RemoveTerrain(rayOutput.position, carveSize);
+            }
+            if (Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                terrainCarver.FillTerrain(rayOutput.position, carveSize);
+            }
         }
         
         // Vector4 sphereGPU = new Vector4(sphere.position.x, sphere.position.y, sphere.position.z, sphere.lossyScale.x / 2);
         // Debug.Log(GPUPhysics.AreColliding(chunks[0][0][0].vertexBuffer, chunks[0][0][0].indexBuffer, chunks[0][0][0].chunkPosition, sphereGPU));
-        
     }
     private void PlaceChunksAroundPlayer(Vector3 playerChunkIndex)
     {
