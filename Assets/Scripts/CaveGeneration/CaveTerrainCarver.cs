@@ -36,7 +36,7 @@ public class CaveTerrainCarver
         {
             Vector3 chunkIndex = GetChunkIndex(chunkCollider.transform.position);
             CaveChunk chunk = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z];
-            Vector3 carvePos = _pos - chunk.chunkPosition;
+            Vector3 carvePos = _pos - chunk.position;
             
             caveCarveShader.SetTexture(0, "noiseTex", chunk.noiseTex);
             caveCarveShader.SetVector("carvePos", carvePos);
@@ -44,7 +44,7 @@ public class CaveTerrainCarver
             caveCarveShader.SetFloat("carveSpeed", _carveSpeed);
             
             caveCarveShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
-            chunk.GenerateMesh(0.5f);
+            chunk.GenerateMesh();
         }
     }
     
@@ -55,14 +55,14 @@ public class CaveTerrainCarver
         {
             Vector3 chunkIndex = GetChunkIndex(chunkCollider.transform.position);
             CaveChunk chunk = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z];
-            Vector3 carvePos = _pos - chunk.chunkPosition;
+            Vector3 carvePos = _pos - chunk.position;
             
             caveCarveShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             caveCarveShader.SetVector("carvePos", carvePos);
             caveCarveShader.SetFloat("carveSize", _carveSize);
             
             caveCarveShader.Dispatch(1, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
-            chunk.GenerateMesh(0.5f);
+            chunk.GenerateMesh();
         }
     }
     

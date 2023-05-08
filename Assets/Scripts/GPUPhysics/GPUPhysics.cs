@@ -6,62 +6,96 @@ using UnityEngine;
 public static class GPUPhysics
 {
     private static ComputeShader gpuPhysicsShader;
-    private static ComputeBuffer resultBuffer;
+    private static ComputeBuffer sphereOutputBuffer;
     private static ComputeBuffer countBuffer;
-    private static ComputeBuffer intersectBuffer;
+    private static ComputeBuffer rayOutputBuffer;
     static GPUPhysics()
     {
         gpuPhysicsShader = Resources.Load<ComputeShader>("GPUPhysicsShader");
-        resultBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
+        sphereOutputBuffer = new ComputeBuffer(50, sizeof(float) * 3, ComputeBufferType.Append);
         countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
-        intersectBuffer = new ComputeBuffer(100, sizeof(float) * 6, ComputeBufferType.Append);
+        rayOutputBuffer = new ComputeBuffer(50, sizeof(float) * 6, ComputeBufferType.Append);
     }
 
-    public static bool AreColliding(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _sdfPos, Vector4 _circle)
+    public static bool SphereIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, 
+        Vector3 _spherePos, float _sphereRadius, out Vector3 _solvingForce)
     {
-        resultBuffer.SetData(new int[1]);
-        
-        gpuPhysicsShader.GetKernelThreadGroupSizes(0, out uint threadGroupSizeX, out uint _, out uint _);
+        countBuffer.SetData(new int[1]);
+        sphereOutputBuffer.SetCounterValue(0);
+        _solvingForce = new Vector3();
+
+        int kernelID = gpuPhysicsShader.FindKernel("MeshOverlapSphere");
+        gpuPhysicsShader.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out uint _, out uint _);
 
         int amountTriangles = _indexBuffer.count / 3;
         Vector3 threadGroupSize = Vector3.one;
         threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
+
+        _spherePos -= _meshPos;
+        gpuPhysicsShader.SetBuffer(kernelID, "vertexBuffer", _vertexBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "indexBuffer", _indexBuffer);
+        gpuPhysicsShader.SetVector("spherePos", _spherePos);
+        gpuPhysicsShader.SetFloat("sphereRadius", _sphereRadius);
+        gpuPhysicsShader.SetBuffer(kernelID, "countBuffer", countBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "outputSphereBuffer", sphereOutputBuffer);
         
-        gpuPhysicsShader.SetBuffer(0, "vertexBuffer", _vertexBuffer);
-        gpuPhysicsShader.SetBuffer(0, "indexBuffer", _indexBuffer);
-        gpuPhysicsShader.SetVector("circle", _circle);
-        gpuPhysicsShader.SetBuffer(0, "output", resultBuffer);
+        gpuPhysicsShader.Dispatch(kernelID, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
+        _spherePos += _meshPos;
         
-        gpuPhysicsShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
+        int[] counters = new int[1];
+        countBuffer.GetData(counters);
+        int counter = counters[0];
+
+        if (counter == 0)
+        {
+            return false;
+        }
         
-        int[] results = new int[1];
-        resultBuffer.GetData(results);
-        int result = results[0];
-        return result > 0;
+        Vector3[] points = new Vector3[counter];
+        sphereOutputBuffer.GetData(points);
+        
+        //Change this to properly reflect the resolving force
+        Vector3 solvingForce = new Vector3();
+        Vector3 avgPos = new Vector3();
+
+        for (var i = 0; i < points.Length; i++)
+        {
+            var point = points[i] + _meshPos;
+            var dir = _spherePos - point;
+            solvingForce += dir;
+            avgPos += point;
+        }
+
+        avgPos /= counter;
+        float dist = Vector3.Distance(avgPos, _spherePos);
+        _solvingForce = solvingForce.normalized * (dist * 0.5f);
+        
+        return true;
     }
     
     public static bool RayIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, Vector3 _rayOrigin, Vector3 _rayDirection, out RayOutput _rayOutput)
     {
         countBuffer.SetData(new int[1]);
-        intersectBuffer.SetCounterValue(0);
+        rayOutputBuffer.SetCounterValue(0);
         _rayOutput = new RayOutput();
         float rayLength = _rayDirection.magnitude;
 
-        gpuPhysicsShader.GetKernelThreadGroupSizes(1, out uint threadGroupSizeX, out uint _, out uint _);
+        int kernelID = gpuPhysicsShader.FindKernel("MeshIntersectRay");
+        gpuPhysicsShader.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out uint _, out uint _);
 
         int amountTriangles = _indexBuffer.count / 3;
         Vector3 threadGroupSize = Vector3.one;
         threadGroupSize.x = Mathf.CeilToInt(amountTriangles / (float)threadGroupSizeX);
 
         _rayOrigin -= _meshPos;
-        gpuPhysicsShader.SetBuffer(1, "vertexBuffer", _vertexBuffer);
-        gpuPhysicsShader.SetBuffer(1, "indexBuffer", _indexBuffer);
-        gpuPhysicsShader.SetBuffer(1, "countBuffer", countBuffer);
-        gpuPhysicsShader.SetBuffer(1, "intersectBuffer", intersectBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "vertexBuffer", _vertexBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "indexBuffer", _indexBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "countBuffer", countBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "rayOutputBuffer", rayOutputBuffer);
         gpuPhysicsShader.SetVector("rayOrigin", _rayOrigin);
         gpuPhysicsShader.SetVector("rayDirection", _rayDirection);
         
-        gpuPhysicsShader.Dispatch(1, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
+        gpuPhysicsShader.Dispatch(kernelID, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
         _rayOrigin += _meshPos;
         
         int[] counters = new int[1];
@@ -74,7 +108,7 @@ public static class GPUPhysics
         }
         
         RayOutput[] intersections = new RayOutput[counter];
-        intersectBuffer.GetData(intersections);
+        rayOutputBuffer.GetData(intersections);
         
         float lowestT = float.MaxValue;
         Vector3 point = new Vector3(0, -1000, 0);

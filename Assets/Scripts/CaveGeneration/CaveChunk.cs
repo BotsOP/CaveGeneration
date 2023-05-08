@@ -6,7 +6,7 @@ public class CaveChunk
 {
     public Mesh caveMesh;
     public RenderTexture noiseTex;
-    public Vector3 chunkPosition;
+    public Vector3 position;
     public GameObject gameObject;
     public MeshFilter meshFilter;
     public List<GameObject> decorations;
@@ -16,18 +16,20 @@ public class CaveChunk
     private Vector3 threadGroupSize;
     private int kernelIndex;
     private int chunkSize;
+    private float isoLevel;
     private Bounds meshBounds;
     public GraphicsBuffer vertexBuffer;
     public GraphicsBuffer indexBuffer;
     private ComputeBuffer amountVertsBuffer;
     private GraphicsBuffer appendTrianglesBuffer;
 
-    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, int _amountDecorations, GameObject _gameObject, GameObject _decorationObject)
+    public CaveChunk(float _chunkSize, Vector3 _position, float _isoLevel, float _noiseScale, int _amountDecorations, GameObject _gameObject, GameObject _decorationObject)
     {
         chunkSize = (int)_chunkSize;
-        chunkPosition = _chunkPosition;
+        position = _position;
         meshFilter = _gameObject.GetComponent<MeshFilter>();
         gameObject = _gameObject;
+        isoLevel = _isoLevel;
         decorations = new List<GameObject>();
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
@@ -55,16 +57,17 @@ public class CaveChunk
         appendTrianglesBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, amountMaxVerts, sizeof(float) * (3 + 3));
 
         Initialize(_noiseScale);
-        GenerateMesh(_isoLevel);
+        GenerateMesh();
         SpawnDecorations(_decorationObject);
     }
-    public CaveChunk(float _chunkSize, Vector3 _chunkPosition, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter, List<GameObject> _decorations)
+    public CaveChunk(float _chunkSize, Vector3 _position, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter, List<GameObject> _decorations)
     {
         chunkSize = (int)_chunkSize;
-        chunkPosition = _chunkPosition;
+        position = _position;
         meshFilter = _meshFilter;
         gameObject = _gameObject;
         decorations = _decorations;
+        isoLevel = _isoLevel;
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
         
@@ -91,7 +94,7 @@ public class CaveChunk
         appendTrianglesBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, amountMaxVerts, sizeof(float) * (3 + 3));
 
         Initialize(_noiseScale);
-        GenerateMesh(_isoLevel);
+        GenerateMesh();
         SpawnDecorations();
     }
 
@@ -114,11 +117,11 @@ public class CaveChunk
         
         noiseGenerationShader.SetTexture(0, "noiseTex", noiseTex);
         noiseGenerationShader.SetFloat("noiseScale", chunkSize * _noiseScale);
-        noiseGenerationShader.SetVector("noiseOffset", chunkPosition);
+        noiseGenerationShader.SetVector("noiseOffset", position);
         noiseGenerationShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
     }
 
-    public void GenerateMesh(float isoLevel)
+    public void GenerateMesh()
     {
         appendTrianglesBuffer.SetCounterValue(0);
 
@@ -167,14 +170,14 @@ public class CaveChunk
 
     private void SpawnDecorations(GameObject _decoration)
     {
-        Vector3 rayOrigin = chunkPosition + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
+        Vector3 rayOrigin = position + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
         RayOutput rayOutput;
         int maxAmountOfRays = 10;
         int index = 0;
         while (true)
         {
             Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
-            if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, chunkPosition, rayOrigin, rayDirection, out rayOutput))
+            if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, position, rayOrigin, rayDirection, out rayOutput))
             {
                 GameObject tempDeco = Object.Instantiate(_decoration, rayOutput.position, Quaternion.LookRotation(rayOutput.normal));
                 decorations.Add(tempDeco);
@@ -194,14 +197,14 @@ public class CaveChunk
     {
         foreach (var decoration in decorations)
         {
-            Vector3 rayOrigin = chunkPosition + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
+            Vector3 rayOrigin = position + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
             RayOutput rayOutput;
             int maxAmountOfRays = 10;
             int index = 0;
             while (true)
             {
                 Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
-                if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, chunkPosition, rayOrigin, rayDirection, out rayOutput))
+                if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, position, rayOrigin, rayDirection, out rayOutput))
                 {
                     decoration.transform.position = rayOutput.position;
                     decoration.transform.rotation = Quaternion.LookRotation(rayOutput.normal);

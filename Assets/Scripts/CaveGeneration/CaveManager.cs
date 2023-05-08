@@ -5,9 +5,8 @@ using Managers;
 using UnityEngine;
 using EventType = Managers.EventType;
 
-public class CaveGeneratorManager : MonoBehaviour
+public class CaveManager : MonoBehaviour
 {
-    [SerializeField] private Transform playerTransform;
     [SerializeField] private GameObject meshContainer;
     [SerializeField] private GameObject caveDecoration;
     [SerializeField] private int chunkSize;
@@ -17,7 +16,9 @@ public class CaveGeneratorManager : MonoBehaviour
     [SerializeField, Range(1, 32)] private int amountChunksVertical;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
     [SerializeField] private LayerMask caveMask;
+    public Transform raycastCursor;
     public Transform sphere;
+    public Transform sphere2;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
     private CaveTerrainCarver terrainCarver;
@@ -38,7 +39,7 @@ public class CaveGeneratorManager : MonoBehaviour
         caveBounds[1] = new Vector3(caveWidth, amountChunksVertical * stepSize, caveWidth);
         
         chunks = new CaveChunk[amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal];
-        physicsManager = new CavePhysicsManager(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical);
+        physicsManager = new CavePhysicsManager(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, caveMask);
         terrainCarver = new CaveTerrainCarver(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, caveMask);
 
         for (int i = 0; i < chunks.GetLength(0); i++)
@@ -57,6 +58,7 @@ public class CaveGeneratorManager : MonoBehaviour
         }
         
         EventSystem<MyRay, float, float>.Subscribe(EventType.CARVE_TERRAIN, CarveTerrain);
+        EventSystem<Vector3>.Subscribe(EventType.UPDATE_CHUNKS, PlaceChunksAroundPlayer);
     }
 
     private void OnDisable()
@@ -76,15 +78,15 @@ public class CaveGeneratorManager : MonoBehaviour
         }
         
         EventSystem<MyRay, float, float>.Unsubscribe(EventType.CARVE_TERRAIN, CarveTerrain);
+        EventSystem<Vector3>.Unsubscribe(EventType.UPDATE_CHUNKS, PlaceChunksAroundPlayer);
     }
 
     private void CarveTerrain(MyRay _ray, float _carveSize, float _carveSpeed)
     {
         if (physicsManager.Raycast(_ray.origin, _ray.direction, out var rayOutput))
         {
-            Debug.DrawRay(playerTransform.position, playerTransform.forward * 1000);
-            sphere.position = rayOutput.position;
-            sphere.rotation = Quaternion.LookRotation(rayOutput.normal);
+            raycastCursor.position = rayOutput.position;
+            raycastCursor.rotation = Quaternion.LookRotation(rayOutput.normal);
             terrainCarver.RemoveTerrain(rayOutput.position, _carveSize, _carveSpeed);
         }
     }
@@ -102,15 +104,18 @@ public class CaveGeneratorManager : MonoBehaviour
                         if (ReferenceEquals(chunks[i, j, k], null))
                             continue;
                         
-                        chunks[i, j, k].GenerateMesh(isoLevel);
+                        chunks[i, j, k].GenerateMesh();
                     }
                 }
             }
         }
         
-        Vector3 playerChunkIndex = GetChunkIndex(playerTransform.position);
-        PlaceChunksAroundPlayer(playerChunkIndex);
-        
+        if (physicsManager.Sphere(sphere.position, sphere.lossyScale.x / 2, out Vector3 resolvingForce))
+        {
+            Debug.Log(resolvingForce);
+            sphere.position += resolvingForce;
+        }
+
         // if (Input.GetKeyDown(KeyCode.C))
         // {
         //     AddChunksLeft();
@@ -130,17 +135,20 @@ public class CaveGeneratorManager : MonoBehaviour
 
         
     }
-    private void PlaceChunksAroundPlayer(Vector3 playerChunkIndex)
+    private void PlaceChunksAroundPlayer(Vector3 _playerChunkIndex)
     {
+        Vector3 playerChunkIndex = _playerChunkIndex.Remap(caveBounds[0], caveBounds[1], Vector3.zero, 
+            new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
+        
         if (Mathf.Abs(playerChunkIndex.x - amountChunksHorizontal / 2f) > 1)
         {
             if (playerChunkIndex.x < amountChunksHorizontal / 2f)
             {
                 AddChunksLeft();
-                Debug.Log($"shifted chunks left");
+                //Debug.Log($"shifted chunks left");
                 return;
             }
-            Debug.Log($"shifted chunks right");
+            //Debug.Log($"shifted chunks right");
             AddChunksRight();
         }
         if (Mathf.Abs(playerChunkIndex.z - amountChunksHorizontal / 2f) > 1)
@@ -148,18 +156,12 @@ public class CaveGeneratorManager : MonoBehaviour
             if (playerChunkIndex.z < amountChunksHorizontal / 2f)
             {
                 AddChunksBackward();
-                Debug.Log($"shifted chunks backward");
+                //Debug.Log($"shifted chunks backward");
                 return;
             }
-            Debug.Log($"shifted chunks forward");
+            //Debug.Log($"shifted chunks forward");
             AddChunksForward();
         }
-    }
-
-    private Vector3 GetChunkIndex(Vector3 _playerPos)
-    {
-        return _playerPos.Remap(caveBounds[0], caveBounds[1], Vector3.zero, 
-                                new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
     }
 
     #region AddChunks
@@ -181,7 +183,7 @@ public class CaveGeneratorManager : MonoBehaviour
                     if (i == 0)
                     {
                         Vector3 index = new Vector3(i, j, k);
-                        Vector3 pos = chunks[i, j, k].chunkPosition;
+                        Vector3 pos = chunks[i, j, k].position;
                         pos.x -= stepSize;
                         
                         discardedObjects.Peek().transform.position = pos;
@@ -222,7 +224,7 @@ public class CaveGeneratorManager : MonoBehaviour
                     if (i == chunks.GetLength(0) - 1)
                     {
                         Vector3 index = new Vector3(i, j, k);
-                        Vector3 pos = chunks[i, j, k].chunkPosition;
+                        Vector3 pos = chunks[i, j, k].position;
                         pos.x += stepSize;
                         
                         discardedObjects.Peek().transform.position = pos;
@@ -264,7 +266,7 @@ public class CaveGeneratorManager : MonoBehaviour
                     if (k == chunks.GetLength(0) - 1)
                     {
                         Vector3 index = new Vector3(i, j, k);
-                        Vector3 pos = chunks[i, j, k].chunkPosition;
+                        Vector3 pos = chunks[i, j, k].position;
                         pos.z += stepSize;
                         
                         discardedObjects.Peek().transform.position = pos;
@@ -305,7 +307,7 @@ public class CaveGeneratorManager : MonoBehaviour
                     if (k == 0)
                     {
                         Vector3 index = new Vector3(i, j, k);
-                        Vector3 pos = chunks[i, j, k].chunkPosition;
+                        Vector3 pos = chunks[i, j, k].position;
                         pos.z -= stepSize;
 
                         discardedObjects.Peek().transform.position = pos;

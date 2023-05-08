@@ -6,6 +6,7 @@ namespace Managers
     {
         CARVE_TERRAIN,
         FILL_TERRAIN,
+        UPDATE_CHUNKS,
     }
 
 
