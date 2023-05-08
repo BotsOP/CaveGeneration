@@ -22,9 +22,9 @@ public class CavePhysicsManager
         instance = this;
     }
 
-    public bool Sphere(Vector3 _spherePos, float _sphereRadius, out Vector3 _resolvingForce)
+    public bool Sphere(Vector3 _spherePos, float _sphereRadius, out RayOutput _closestPoint)
     {
-        _resolvingForce = new Vector3();
+        _closestPoint = new RayOutput();
         
         Collider[] chunksHit = Physics.OverlapSphere(_spherePos, _sphereRadius, caveMask);
         int amountChunksHit = chunksHit.Length;
@@ -33,6 +33,9 @@ public class CavePhysicsManager
         {
             return false;
         }
+
+        float lowestDist = float.MaxValue;
+        RayOutput closestPos = new RayOutput();
         
         foreach (var chunkCollider in chunksHit)
         {
@@ -40,19 +43,24 @@ public class CavePhysicsManager
             CaveChunk chunk = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z];
 
             if (GPUPhysics.SphereIntersectMesh(chunk.vertexBuffer, chunk.indexBuffer, chunk.position, _spherePos,
-                    _sphereRadius, out Vector3 resolvingForce))
+                    _sphereRadius, out RayOutput closestPoint))
             {
-                Debug.Log(resolvingForce);
-                _resolvingForce += resolvingForce;
+                float dist = Vector3.Distance(closestPoint.position, _spherePos);
+                if (dist < lowestDist)
+                {
+                    lowestDist = dist;
+                    closestPos.position = closestPoint.position;
+                    closestPos.normal = closestPoint.normal;
+                }
             }
         }
 
-        if (_resolvingForce == Vector3.zero)
+        if (closestPos.position == Vector3.zero)
         {
             return false;
         }
 
-        _resolvingForce /= amountChunksHit;
+        _closestPoint = closestPos;
         
         return true;
     }

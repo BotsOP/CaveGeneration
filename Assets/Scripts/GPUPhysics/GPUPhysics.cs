@@ -6,23 +6,21 @@ using UnityEngine;
 public static class GPUPhysics
 {
     private static ComputeShader gpuPhysicsShader;
-    private static ComputeBuffer sphereOutputBuffer;
     private static ComputeBuffer countBuffer;
     private static ComputeBuffer rayOutputBuffer;
     static GPUPhysics()
     {
         gpuPhysicsShader = Resources.Load<ComputeShader>("GPUPhysicsShader");
-        sphereOutputBuffer = new ComputeBuffer(50, sizeof(float) * 3, ComputeBufferType.Append);
         countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
         rayOutputBuffer = new ComputeBuffer(50, sizeof(float) * 6, ComputeBufferType.Append);
     }
 
     public static bool SphereIntersectMesh(GraphicsBuffer _vertexBuffer, GraphicsBuffer _indexBuffer, Vector3 _meshPos, 
-        Vector3 _spherePos, float _sphereRadius, out Vector3 _solvingForce)
+        Vector3 _spherePos, float _sphereRadius, out RayOutput _closestPoint)
     {
         countBuffer.SetData(new int[1]);
-        sphereOutputBuffer.SetCounterValue(0);
-        _solvingForce = new Vector3();
+        rayOutputBuffer.SetCounterValue(0);
+        _closestPoint = new RayOutput();
 
         int kernelID = gpuPhysicsShader.FindKernel("MeshOverlapSphere");
         gpuPhysicsShader.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out uint _, out uint _);
@@ -37,7 +35,7 @@ public static class GPUPhysics
         gpuPhysicsShader.SetVector("spherePos", _spherePos);
         gpuPhysicsShader.SetFloat("sphereRadius", _sphereRadius);
         gpuPhysicsShader.SetBuffer(kernelID, "countBuffer", countBuffer);
-        gpuPhysicsShader.SetBuffer(kernelID, "outputSphereBuffer", sphereOutputBuffer);
+        gpuPhysicsShader.SetBuffer(kernelID, "rayOutputBuffer", rayOutputBuffer);
         
         gpuPhysicsShader.Dispatch(kernelID, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
         _spherePos += _meshPos;
@@ -50,25 +48,31 @@ public static class GPUPhysics
         {
             return false;
         }
+        if (counter > 50)
+        {
+            counter = 50;
+        }
         
-        Vector3[] points = new Vector3[counter];
-        sphereOutputBuffer.GetData(points);
+        RayOutput[] points = new RayOutput[counter];
+        rayOutputBuffer.GetData(points);
         
         //Change this to properly reflect the resolving force
-        Vector3 solvingForce = new Vector3();
-        Vector3 avgPos = new Vector3();
+        float lowestDist = float.MaxValue;
+        RayOutput closestPoint = new RayOutput();
 
         for (var i = 0; i < points.Length; i++)
         {
-            var point = points[i] + _meshPos;
-            var dir = _spherePos - point;
-            solvingForce += dir;
-            avgPos += point;
+            var point = points[i].position + _meshPos;
+            float dist = Vector3.Distance(point, _spherePos);
+            if (dist < lowestDist)
+            {
+                lowestDist = dist;
+                closestPoint.position = point;
+                closestPoint.normal = points[i].normal;
+            }
         }
 
-        avgPos /= counter;
-        float dist = Vector3.Distance(avgPos, _spherePos);
-        _solvingForce = solvingForce.normalized * (dist * 0.5f);
+        _closestPoint = closestPoint;
         
         return true;
     }
@@ -106,7 +110,11 @@ public static class GPUPhysics
         {
             return false;
         }
-        
+        if (counter > 50)
+        {
+            counter = 50;
+        }
+
         RayOutput[] intersections = new RayOutput[counter];
         rayOutputBuffer.GetData(intersections);
         

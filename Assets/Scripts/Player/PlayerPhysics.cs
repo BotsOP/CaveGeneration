@@ -2,8 +2,9 @@ using Managers;
 using UnityEngine;
 using EventType = Managers.EventType;
 
-public class PlayerPhysics : MonoBehaviour 
+public class PlayerPhysics : MonoBehaviour
 {
+	[SerializeField] private Transform camTransform;
 	[SerializeField, Range(0f, 100f)]
 	float maxSpeed = 10f;
 	[SerializeField, Range(0f, 100f)]
@@ -49,8 +50,10 @@ public class PlayerPhysics : MonoBehaviour
 		playerInput.y = Input.GetAxis("Vertical");
 		playerInput = Vector2.ClampMagnitude(playerInput, 1f);
 
-		desiredVelocity =
-			new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+		var forward = camTransform.forward;
+		var right = camTransform.right;
+		desiredVelocity = (playerInput.x * right + playerInput.y * forward) * maxSpeed;
+		desiredVelocity = new Vector3(desiredVelocity.x, 0, desiredVelocity.z);
 
 		desiredJump |= Input.GetButtonDown("Jump");
 		
@@ -66,19 +69,34 @@ public class PlayerPhysics : MonoBehaviour
 		
 		UpdateState();
 		AdjustVelocity();
-
-		if (desiredJump) {
-			desiredJump = false;
-			Jump();
-		}
 		
 		if (CavePhysicsManager.instance.Sphere(transform.position, transform.lossyScale.x / 2,
-			    out Vector3 solvingForce))
+		                                       out RayOutput closestPoint))
 		{
-			Debug.Log($"COLLIDE");
-			velocity += solvingForce * collisionSolverMultiplier;
-			body.velocity = velocity;
+			Vector3 pos = closestPoint.position;
+			Vector3 normal = closestPoint.normal;
+			
+			float magnitude = transform.lossyScale.x / 2 - Vector3.Distance(transform.position, pos);
+			Vector3 dir = (transform.position - pos).normalized;
+			transform.Translate(dir * (magnitude * collisionSolverMultiplier));
+			velocity += dir * magnitude;
+			
+			if (normal.y >= minGroundDotProduct) {
+				groundContactCount += 1;
+				contactNormal += normal;
+			}
+			else if (normal.y > -0.01f) {
+				steepContactCount += 1;
+				steepNormal += normal;
+			}
+			
 			nextFrameReset = true;
+		}
+
+		if (desiredJump) 
+		{
+			desiredJump = false;
+			Jump();
 		}
 
 		body.velocity = velocity;
@@ -117,7 +135,7 @@ public class PlayerPhysics : MonoBehaviour
 			return false;
 		}
 		if (!CavePhysicsManager.instance.Raycast(
-			body.position, Vector3.down, out RayOutput hit)) {
+			body.position, Vector3.down * probeDistance, out RayOutput hit)) {
 			return false;
 		}
 		if (hit.normal.y < minGroundDotProduct) {
@@ -128,7 +146,7 @@ public class PlayerPhysics : MonoBehaviour
 		contactNormal = hit.normal;
 		float dot = Vector3.Dot(velocity, hit.normal);
 		if (dot > 0f) {
-			velocity = (velocity - hit.normal * dot).normalized * speed;
+			velocity = (velocity - Vector3.up * dot).normalized * speed;
 		}
 		return true;
 	}
@@ -194,36 +212,31 @@ public class PlayerPhysics : MonoBehaviour
 		velocity += jumpDirection * jumpSpeed;
 	}
 
-	void OnCollisionEnter (Collision collision) {
-		EvaluateCollision(collision);
-	}
-
-	void OnCollisionStay (Collision collision) {
-		EvaluateCollision(collision);
-	}
-
-	void EvaluateCollision (Collision collision) {
-		float minDot = GetMinDot(collision.gameObject.layer);
-		for (int i = 0; i < collision.contactCount; i++) {
-			Vector3 normal = collision.GetContact(i).normal;
-			if (normal.y >= minDot) {
-				groundContactCount += 1;
-				contactNormal += normal;
-			}
-			else if (normal.y > -0.01f) {
-				steepContactCount += 1;
-				steepNormal += normal;
-			}
-		}
-	}
+	// void OnCollisionEnter (Collision collision) {
+	// 	EvaluateCollision(collision);
+	// }
+	//
+	// void OnCollisionStay (Collision collision) {
+	// 	EvaluateCollision(collision);
+	// }
+	//
+	// void EvaluateCollision (Collision collision) {
+	// 	float minDot = GetMinDot(collision.gameObject.layer);
+	// 	for (int i = 0; i < collision.contactCount; i++) {
+	// 		Vector3 normal = collision.GetContact(i).normal;
+	// 		if (normal.y >= minDot) {
+	// 			groundContactCount += 1;
+	// 			contactNormal += normal;
+	// 		}
+	// 		else if (normal.y > -0.01f) {
+	// 			steepContactCount += 1;
+	// 			steepNormal += normal;
+	// 		}
+	// 	}
+	// }
 
 	Vector3 ProjectOnContactPlane (Vector3 vector) {
 		return vector - contactNormal * Vector3.Dot(vector, contactNormal);
-	}
-
-	float GetMinDot (int layer) {
-		return (stairsMask & (1 << layer)) == 0 ?
-			minGroundDotProduct : minStairsDotProduct;
 	}
 }
 

@@ -110,11 +110,11 @@ public class CaveManager : MonoBehaviour
             }
         }
         
-        if (physicsManager.Sphere(sphere.position, sphere.lossyScale.x / 2, out Vector3 resolvingForce))
-        {
-            Debug.Log(resolvingForce);
-            sphere.position += resolvingForce;
-        }
+        // if (physicsManager.Sphere(sphere.position, sphere.lossyScale.x / 2, out RayOutput resolvingForce))
+        // {
+        //     Debug.Log(resolvingForce);
+        //     sphere.position += resolvingForce;
+        // }
 
         // if (Input.GetKeyDown(KeyCode.C))
         // {
