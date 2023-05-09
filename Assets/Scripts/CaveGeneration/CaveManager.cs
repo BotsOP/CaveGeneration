@@ -132,8 +132,6 @@ public class CaveManager : MonoBehaviour
         // {
         //     AddChunksBackward();
         // }
-
-        
     }
     private void PlaceChunksAroundPlayer(Vector3 _playerChunkIndex)
     {
