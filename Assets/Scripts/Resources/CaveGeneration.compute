@@ -20,7 +20,7 @@ StructuredBuffer<Triangle> triangleBuffer;
 RWStructuredBuffer<Vertex> vertexBuffer;
 RWStructuredBuffer<int> amountTrianglesBuffer;
 RWStructuredBuffer<uint> indexBuffer;
-RWTexture3D<float> noiseTex;
+Texture3D<float> noiseTex;
 uint chunkSize;
 float isoLevel;
 

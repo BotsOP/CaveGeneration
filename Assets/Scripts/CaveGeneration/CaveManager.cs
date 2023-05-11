@@ -23,6 +23,7 @@ public class CaveManager : MonoBehaviour
     private Vector3[] caveBounds;
     private float caveWidth;
     private int stepSize;
+    public RenderTexture test;
 
     private float NoiseScale => noiseScale / caveScale;
 
@@ -54,6 +55,8 @@ public class CaveManager : MonoBehaviour
                 }
             }
         }
+
+        test = chunks[0, 0, 0].noiseTex;
         
         EventSystem<MyRay, float, float>.Subscribe(EventType.CARVE_TERRAIN, CarveTerrain);
         EventSystem<Vector3>.Subscribe(EventType.UPDATE_CHUNKS, PlaceChunksAroundPlayer);
@@ -124,8 +127,6 @@ public class CaveManager : MonoBehaviour
         // {
         //     AddChunksBackward();
         // }
-
-        
     }
     private void PlaceChunksAroundPlayer(Vector3 _playerChunkIndex)
     {
