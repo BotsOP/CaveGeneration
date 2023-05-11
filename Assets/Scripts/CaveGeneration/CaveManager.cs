@@ -17,8 +17,6 @@ public class CaveManager : MonoBehaviour
     [SerializeField, Range(0.1f, 1)] private float caveScale;
     [SerializeField] private LayerMask caveMask;
     public Transform raycastCursor;
-    public Transform sphere;
-    public Transform sphere2;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
     private CaveTerrainCarver terrainCarver;
@@ -85,8 +83,8 @@ public class CaveManager : MonoBehaviour
     {
         if (physicsManager.Raycast(_ray.origin, _ray.direction, out var rayOutput))
         {
-            raycastCursor.position = rayOutput.position;
-            raycastCursor.rotation = Quaternion.LookRotation(rayOutput.normal);
+            // raycastCursor.position = rayOutput.position;
+            // raycastCursor.rotation = Quaternion.LookRotation(rayOutput.normal);
             terrainCarver.RemoveTerrain(rayOutput.position, _carveSize, _carveSpeed);
         }
     }
@@ -109,12 +107,6 @@ public class CaveManager : MonoBehaviour
                 }
             }
         }
-        
-        // if (physicsManager.Sphere(sphere.position, sphere.lossyScale.x / 2, out RayOutput resolvingForce))
-        // {
-        //     Debug.Log(resolvingForce);
-        //     sphere.position += resolvingForce;
-        // }
 
         // if (Input.GetKeyDown(KeyCode.C))
         // {

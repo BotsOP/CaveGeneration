@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +23,7 @@
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/PlayerCamera.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/CaveGeneration/CaveManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" root0="FORCE_HIGHLIGHTING" />
@@ -91,10 +86,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="22880">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="22880" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -172,7 +167,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683423905108</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Improved player physics significantly">
+      <created>1683576164649</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1683576164649</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -201,7 +203,8 @@
     <MESSAGE value="Got fast carving working" />
     <MESSAGE value="Removed multiple ray optimization since its concept doesnt fucking optimize anything. Improved usability of the raycast function" />
     <MESSAGE value="Fixed raycast bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed raycast bug" />
+    <MESSAGE value="Improved player physics significantly" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved player physics significantly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
