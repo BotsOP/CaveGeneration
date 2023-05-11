@@ -19,5 +19,6 @@ public class PlayerCamera : MonoBehaviour
         rotationY += Input.GetAxis("Mouse X") * mouseSensitivity;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
         transform.localRotation = Quaternion.Euler(rotationX, rotationY, 0);
+        
     }
 }

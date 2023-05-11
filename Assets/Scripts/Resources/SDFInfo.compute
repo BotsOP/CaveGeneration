@@ -1,0 +1,277 @@
+#pragma kernel GetNeighbours1
+#pragma kernel GetNeighbours2
+#pragma kernel GetNeighbours8
+
+Texture3D<float> noiseTex;
+Texture3D<float> noiseTexAdjacent1;
+Texture3D<float> noiseTexAdjacent2;
+Texture3D<float> noiseTexAdjacent3;
+Texture3D<float> noiseTexAdjacent4;
+Texture3D<float> noiseTexAdjacent5;
+Texture3D<float> noiseTexAdjacent6;
+Texture3D<float> noiseTexAdjacent7;
+float3 currentPos;
+float3 noiseTexOffset;
+float3 noiseTexOffset1;
+float3 noiseTexOffset2;
+float3 noiseTexOffset3;
+int chunkSize;
+float isoLevel;
+
+RWStructuredBuffer<float> neighbours;
+
+[numthreads(32,1,1)]
+void GetNeighbours1 (uint id : SV_DispatchThreadID)
+{
+	int newX = currentPos.x + id % 3;
+	int newY = currentPos.y + id / 9;
+	int newZ = currentPos.z + id / 3;
+	int3 neighbourPos = int3(newX, newY, newZ);
+
+	neighbours[id] = noiseTex[neighbourPos];
+}
+
+[numthreads(32,1,1)]
+void GetNeighbours2 (uint id : SV_DispatchThreadID)
+{
+	int newX = currentPos.x + id % 3;
+	int newY = currentPos.y + id / 9;
+	int newZ = currentPos.z + id / 3;
+	int3 neighbourPos = int3(newX, newY, newZ);
+
+	if(newX < 0)
+	{
+		neighbourPos.X = chunkSize - 1;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	if(newX == chunkSize - 1)
+	{
+		neighbourPos.X = 0;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	
+	if(newY < 0)
+	{
+		neighbourPos.Y = chunkSize - 1;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	if(newY == chunkSize - 1)
+	{
+		neighbourPos.Y = 0;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+
+	if(newZ < 0)
+	{
+		neighbourPos.Z = chunkSize - 1;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	if(newZ == chunkSize - 1)
+	{
+		neighbourPos.Z = 0;
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	
+	neighbours[id] = noiseTex[neighbourPos];
+}
+
+[numthreads(32,1,1)]
+void GetNeighbours8 (uint id : SV_DispatchThreadID)
+{
+	int newX = currentPos.x + id % 3;
+	int newY = currentPos.y + id / 9;
+	int newZ = currentPos.z + id / 3;
+	int3 neighbourPos = int3(newX, newY, newZ);
+
+	bool isXTooLeft = newX < 0;
+	bool isXTooRight = newX == chunkSize;
+	bool isYTooLeft = newY < 0;
+	bool isYTooRight = newY == chunkSize;
+	bool isZTooLeft = newZ < 0;
+	bool isZTooRight = newZ == chunkSize;
+
+	if(isXTooLeft)
+	{
+		neighbourPos.X = chunkSize - 1;
+
+		if(isZTooLeft)
+		{
+			neighbourPos.Z = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent2[neighbourPos];
+			return;
+		}
+		if(isZTooRight)
+		{
+			neighbourPos.Z = 0;
+			neighbours[id] = noiseTexAdjacent2[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	if(isXTooRight)
+	{
+		neighbourPos.X = 0;
+
+		if(isZTooLeft)
+		{
+			neighbourPos.Z = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent2[neighbourPos];
+			return;
+		}
+		if(isZTooRight)
+		{
+			neighbourPos.Z = 0;
+			neighbours[id] = noiseTexAdjacent2[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+
+	if(isZTooLeft)
+	{
+		neighbourPos.Z = chunkSize - 1;
+		neighbours[id] = noiseTexAdjacent3[neighbourPos];
+		return;
+	}
+	if(isZTooRight)
+	{
+		neighbourPos.Z = 0;
+		neighbours[id] = noiseTexAdjacent3[neighbourPos];
+		return;
+	}
+	
+	if(isYTooLeft)
+	{
+		neighbourPos.Y = chunkSize - 1;
+
+		if(isXTooLeft)
+		{
+			neighbourPos.X = chunkSize - 1;
+
+			if(isZTooLeft)
+			{
+				neighbourPos.Z = chunkSize - 1;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+			if(isZTooRight)
+			{
+				neighbourPos.Z = 0;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+		
+			neighbours[id] = noiseTexAdjacent4[neighbourPos];
+			return;
+		}
+		if(isXTooRight)
+		{
+			neighbourPos.X = 0;
+
+			if(isZTooLeft)
+			{
+				neighbourPos.Z = chunkSize - 1;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+			if(isZTooRight)
+			{
+				neighbourPos.Z = 0;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+		
+			neighbours[id] = noiseTexAdjacent4[neighbourPos];
+			return;
+		}
+
+		if(isZTooLeft)
+		{
+			neighbourPos.Z = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent6[neighbourPos];
+			return;
+		}
+		if(isZTooRight)
+		{
+			neighbourPos.Z = 0;
+			neighbours[id] = noiseTexAdjacent6[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent7[neighbourPos];
+		return;
+	}
+	if(isYTooRight)
+	{
+		neighbourPos.Y = 0;
+
+		if(isXTooLeft)
+		{
+			neighbourPos.X = chunkSize - 1;
+
+			if(isZTooLeft)
+			{
+				neighbourPos.Z = chunkSize - 1;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+			if(isZTooRight)
+			{
+				neighbourPos.Z = 0;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+		
+			neighbours[id] = noiseTexAdjacent4[neighbourPos];
+			return;
+		}
+		if(isXTooRight)
+		{
+			neighbourPos.X = 0;
+
+			if(isZTooLeft)
+			{
+				neighbourPos.Z = chunkSize - 1;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+			if(isZTooRight)
+			{
+				neighbourPos.Z = 0;
+				neighbours[id] = noiseTexAdjacent5[neighbourPos];
+				return;
+			}
+		
+			neighbours[id] = noiseTexAdjacent4[neighbourPos];
+			return;
+		}
+
+		if(isZTooLeft)
+		{
+			neighbourPos.Z = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent6[neighbourPos];
+			return;
+		}
+		if(isZTooRight)
+		{
+			neighbourPos.Z = 0;
+			neighbours[id] = noiseTexAdjacent6[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent7[neighbourPos];
+		return;
+	}
+	
+	neighbours[id] = noiseTex[neighbourPos];
+}

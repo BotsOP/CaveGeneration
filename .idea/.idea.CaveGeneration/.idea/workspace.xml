@@ -5,14 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_07_05_2023_21_26__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_08_05_2023_12_08__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_08_05_2023_20_04__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_03_05_2023_15_34_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_03_05_2023_15_34__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/PlayerCamera.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/PlayerCamera.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MeshContainer.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/MeshContainer.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GPUPhysics/GPUPhysics.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Shaders/CaveTriplanar.shadergraph" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Shaders/CaveTriplanar.shadergraph" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +24,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" root0="FORCE_HIGHLIGHTING" />
@@ -28,6 +32,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/Includes/Noise.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Exarion/Assets/Scripts/Managers/EventSystem.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Exarion/Assets/Scripts/Managers/ExtensionMethods.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../GeometryTestLab/Assets/Scripts/GpuGeometry/NewVine.cs" root0="SKIP_HIGHLIGHTING" />
@@ -87,10 +92,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="35208">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="35208" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -118,6 +123,7 @@
       <workItem from="1683382538631" duration="878000" />
       <workItem from="1683457392170" duration="8223000" />
       <workItem from="1683498199002" duration="653000" />
+      <workItem from="1683793208350" duration="8327000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -168,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683423905108</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="small changes">
+      <created>1683631451778</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1683631451778</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -197,7 +210,8 @@
     <MESSAGE value="Got fast carving working" />
     <MESSAGE value="Removed multiple ray optimization since its concept doesnt fucking optimize anything. Improved usability of the raycast function" />
     <MESSAGE value="Fixed raycast bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed raycast bug" />
+    <MESSAGE value="small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="small changes" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
