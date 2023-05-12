@@ -1,5 +1,6 @@
 #pragma kernel GetNeighbours1
 #pragma kernel GetNeighbours2
+#pragma kernel GetNeighbours4
 #pragma kernel GetNeighbours8
 
 Texture3D<float> noiseTex;
@@ -11,21 +12,16 @@ Texture3D<float> noiseTexAdjacent5;
 Texture3D<float> noiseTexAdjacent6;
 Texture3D<float> noiseTexAdjacent7;
 float3 currentPos;
-float3 noiseTexOffset;
-float3 noiseTexOffset1;
-float3 noiseTexOffset2;
-float3 noiseTexOffset3;
 int chunkSize;
-float isoLevel;
 
 RWStructuredBuffer<float> neighbours;
 
 [numthreads(32,1,1)]
 void GetNeighbours1 (uint id : SV_DispatchThreadID)
 {
-	int newX = currentPos.x + id % 3;
-	int newY = currentPos.y + id / 9;
-	int newZ = currentPos.z + id / 3;
+	int newX = currentPos.x + id % 3 - 1;
+	int newY = currentPos.y + id / 9 - 1;
+	int newZ = currentPos.z + id / 3 - 1;
 	int3 neighbourPos = int3(newX, newY, newZ);
 
 	neighbours[id] = noiseTex[neighbourPos];
@@ -34,47 +30,156 @@ void GetNeighbours1 (uint id : SV_DispatchThreadID)
 [numthreads(32,1,1)]
 void GetNeighbours2 (uint id : SV_DispatchThreadID)
 {
-	int newX = currentPos.x + id % 3;
-	int newY = currentPos.y + id / 9;
-	int newZ = currentPos.z + id / 3;
+	int newX = currentPos.x + id % 3 - 1;
+	int newY = currentPos.y + id / 9 - 1;
+	int newZ = currentPos.z + id / 3 - 1;
 	int3 neighbourPos = int3(newX, newY, newZ);
 
 	if(newX < 0)
 	{
-		neighbourPos.X = chunkSize - 1;
+		neighbourPos.x = chunkSize - 1;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
 		return;
 	}
 	if(newX == chunkSize - 1)
 	{
-		neighbourPos.X = 0;
+		neighbourPos.x = 0;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
 		return;
 	}
 	
 	if(newY < 0)
 	{
-		neighbourPos.Y = chunkSize - 1;
+		neighbourPos.y = chunkSize - 1;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
 		return;
 	}
 	if(newY == chunkSize - 1)
 	{
-		neighbourPos.Y = 0;
+		neighbourPos.y = 0;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
 		return;
 	}
 
 	if(newZ < 0)
 	{
-		neighbourPos.Z = chunkSize - 1;
+		neighbourPos.z = chunkSize - 1;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
 		return;
 	}
 	if(newZ == chunkSize - 1)
 	{
-		neighbourPos.Z = 0;
+		neighbourPos.z = 0;
 		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	
+	neighbours[id] = noiseTex[neighbourPos];
+}
+
+[numthreads(32,1,1)]
+void GetNeighbours4 (uint id : SV_DispatchThreadID)
+{
+	int newX = currentPos.x + id % 3 - 1;
+	int newY = currentPos.y + id / 9 - 1;
+	int newZ = currentPos.z + id / 3 - 1;
+	int3 neighbourPos = int3(newX, newY, newZ);
+
+	bool isXTooLeft = newX < 0;
+	bool isXTooRight = newX == chunkSize;
+	bool isYTooDownward = newY < 0;
+	bool isYTooUpward = newY == chunkSize;
+	bool isZTooBackward = newZ < 0;
+	bool isZTooForward = newZ == chunkSize;
+
+	if(isXTooLeft)
+	{
+		neighbourPos.x = chunkSize - 1;
+
+		if(isYTooDownward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		if(isYTooUpward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+	if(isXTooRight)
+	{
+		neighbourPos.x = 0;
+
+		if(isYTooDownward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		if(isYTooUpward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		
+		neighbours[id] = noiseTexAdjacent1[neighbourPos];
+		return;
+	}
+
+	if(isZTooBackward)
+	{
+		neighbourPos.z = chunkSize - 1;
+		if(isYTooDownward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		if(isYTooUpward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		neighbours[id] = noiseTexAdjacent2[neighbourPos];
+		return;
+	}
+	if(isZTooForward)
+	{
+		neighbourPos.z = 0;
+		if(isYTooDownward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		if(isYTooUpward)
+		{
+			neighbourPos.y = chunkSize - 1;
+			neighbours[id] = noiseTexAdjacent3[neighbourPos];
+			return;
+		}
+		neighbours[id] = noiseTexAdjacent2[neighbourPos];
+		return;
+	}
+	
+	if(isYTooDownward)
+	{
+		neighbourPos.y = chunkSize - 1;
+		neighbours[id] = noiseTexAdjacent4[neighbourPos];
+		return;
+	}
+	if(isYTooUpward)
+	{
+		neighbourPos.y = 0;
+		neighbours[id] = noiseTexAdjacent4[neighbourPos];
 		return;
 	}
 	
@@ -84,9 +189,9 @@ void GetNeighbours2 (uint id : SV_DispatchThreadID)
 [numthreads(32,1,1)]
 void GetNeighbours8 (uint id : SV_DispatchThreadID)
 {
-	int newX = currentPos.x + id % 3;
-	int newY = currentPos.y + id / 9;
-	int newZ = currentPos.z + id / 3;
+	int newX = currentPos.x + id % 3 - 1;
+	int newY = currentPos.y + id / 9 - 1;
+	int newZ = currentPos.z + id / 3 - 1;
 	int3 neighbourPos = int3(newX, newY, newZ);
 
 	bool isXTooLeft = newX < 0;
@@ -98,17 +203,17 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 
 	if(isXTooLeft)
 	{
-		neighbourPos.X = chunkSize - 1;
+		neighbourPos.x = chunkSize - 1;
 
 		if(isZTooLeft)
 		{
-			neighbourPos.Z = chunkSize - 1;
+			neighbourPos.z = chunkSize - 1;
 			neighbours[id] = noiseTexAdjacent2[neighbourPos];
 			return;
 		}
 		if(isZTooRight)
 		{
-			neighbourPos.Z = 0;
+			neighbourPos.z = 0;
 			neighbours[id] = noiseTexAdjacent2[neighbourPos];
 			return;
 		}
@@ -118,17 +223,17 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 	}
 	if(isXTooRight)
 	{
-		neighbourPos.X = 0;
+		neighbourPos.x = 0;
 
 		if(isZTooLeft)
 		{
-			neighbourPos.Z = chunkSize - 1;
+			neighbourPos.z = chunkSize - 1;
 			neighbours[id] = noiseTexAdjacent2[neighbourPos];
 			return;
 		}
 		if(isZTooRight)
 		{
-			neighbourPos.Z = 0;
+			neighbourPos.z = 0;
 			neighbours[id] = noiseTexAdjacent2[neighbourPos];
 			return;
 		}
@@ -139,34 +244,34 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 
 	if(isZTooLeft)
 	{
-		neighbourPos.Z = chunkSize - 1;
+		neighbourPos.z = chunkSize - 1;
 		neighbours[id] = noiseTexAdjacent3[neighbourPos];
 		return;
 	}
 	if(isZTooRight)
 	{
-		neighbourPos.Z = 0;
+		neighbourPos.z = 0;
 		neighbours[id] = noiseTexAdjacent3[neighbourPos];
 		return;
 	}
 	
 	if(isYTooLeft)
 	{
-		neighbourPos.Y = chunkSize - 1;
+		neighbourPos.y = chunkSize - 1;
 
 		if(isXTooLeft)
 		{
-			neighbourPos.X = chunkSize - 1;
+			neighbourPos.x = chunkSize - 1;
 
 			if(isZTooLeft)
 			{
-				neighbourPos.Z = chunkSize - 1;
+				neighbourPos.z = chunkSize - 1;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
 			if(isZTooRight)
 			{
-				neighbourPos.Z = 0;
+				neighbourPos.z = 0;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
@@ -176,17 +281,17 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 		}
 		if(isXTooRight)
 		{
-			neighbourPos.X = 0;
+			neighbourPos.x = 0;
 
 			if(isZTooLeft)
 			{
-				neighbourPos.Z = chunkSize - 1;
+				neighbourPos.z = chunkSize - 1;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
 			if(isZTooRight)
 			{
-				neighbourPos.Z = 0;
+				neighbourPos.z = 0;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
@@ -197,13 +302,13 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 
 		if(isZTooLeft)
 		{
-			neighbourPos.Z = chunkSize - 1;
+			neighbourPos.z = chunkSize - 1;
 			neighbours[id] = noiseTexAdjacent6[neighbourPos];
 			return;
 		}
 		if(isZTooRight)
 		{
-			neighbourPos.Z = 0;
+			neighbourPos.z = 0;
 			neighbours[id] = noiseTexAdjacent6[neighbourPos];
 			return;
 		}
@@ -213,21 +318,21 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 	}
 	if(isYTooRight)
 	{
-		neighbourPos.Y = 0;
+		neighbourPos.y = 0;
 
 		if(isXTooLeft)
 		{
-			neighbourPos.X = chunkSize - 1;
+			neighbourPos.x = chunkSize - 1;
 
 			if(isZTooLeft)
 			{
-				neighbourPos.Z = chunkSize - 1;
+				neighbourPos.z = chunkSize - 1;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
 			if(isZTooRight)
 			{
-				neighbourPos.Z = 0;
+				neighbourPos.z = 0;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
@@ -237,17 +342,17 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 		}
 		if(isXTooRight)
 		{
-			neighbourPos.X = 0;
+			neighbourPos.x = 0;
 
 			if(isZTooLeft)
 			{
-				neighbourPos.Z = chunkSize - 1;
+				neighbourPos.z = chunkSize - 1;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
 			if(isZTooRight)
 			{
-				neighbourPos.Z = 0;
+				neighbourPos.z = 0;
 				neighbours[id] = noiseTexAdjacent5[neighbourPos];
 				return;
 			}
@@ -258,13 +363,13 @@ void GetNeighbours8 (uint id : SV_DispatchThreadID)
 
 		if(isZTooLeft)
 		{
-			neighbourPos.Z = chunkSize - 1;
+			neighbourPos.z = chunkSize - 1;
 			neighbours[id] = noiseTexAdjacent6[neighbourPos];
 			return;
 		}
 		if(isZTooRight)
 		{
-			neighbourPos.Z = 0;
+			neighbourPos.z = 0;
 			neighbours[id] = noiseTexAdjacent6[neighbourPos];
 			return;
 		}

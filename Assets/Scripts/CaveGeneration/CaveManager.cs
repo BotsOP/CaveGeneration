@@ -17,13 +17,16 @@ public class CaveManager : MonoBehaviour
     [SerializeField, Range(0.1f, 1)] private float caveScale;
     [SerializeField] private LayerMask caveMask;
     public Transform raycastCursor;
+    public Transform sphere1;
+    public Transform sphere2;
     private CaveChunk[,,] chunks;
     private CavePhysicsManager physicsManager;
     private CaveTerrainCarver terrainCarver;
+    private CavePathfinding pathFinding;
     private Vector3[] caveBounds;
     private float caveWidth;
     private int stepSize;
-    public RenderTexture test;
+    private List<GameObject> previousObjects;
 
     private float NoiseScale => noiseScale / caveScale;
 
@@ -40,6 +43,7 @@ public class CaveManager : MonoBehaviour
         chunks = new CaveChunk[amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal];
         physicsManager = new CavePhysicsManager(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, caveMask);
         terrainCarver = new CaveTerrainCarver(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, caveMask);
+        pathFinding = new CavePathfinding(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, chunkSize);
 
         for (int i = 0; i < chunks.GetLength(0); i++)
         {
@@ -55,9 +59,8 @@ public class CaveManager : MonoBehaviour
                 }
             }
         }
+        previousObjects = new List<GameObject>();
 
-        test = chunks[0, 0, 0].noiseTex;
-        
         EventSystem<MyRay, float, float>.Subscribe(EventType.CARVE_TERRAIN, CarveTerrain);
         EventSystem<Vector3>.Subscribe(EventType.UPDATE_CHUNKS, PlaceChunksAroundPlayer);
     }
@@ -108,6 +111,22 @@ public class CaveManager : MonoBehaviour
                         chunks[i, j, k].GenerateMesh();
                     }
                 }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            for (int i = 0; i < previousObjects.Count; i++)
+            {
+                var tempObject = previousObjects[i];
+                Destroy(tempObject);
+            }
+            previousObjects.Clear();
+
+            List<Location> locations = pathFinding.FindPath(sphere1.position, sphere2.position);
+            foreach (var location in locations)
+            {
+                previousObjects.Add(Instantiate(sphere1, location.pos, Quaternion.identity).gameObject);
             }
         }
 
