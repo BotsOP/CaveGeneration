@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
+    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="Finally got a* working with the cave terrain">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
@@ -32,6 +32,7 @@
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/CaveGeneration/CaveManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
@@ -132,7 +133,7 @@
       <workItem from="1683498199002" duration="653000" />
       <workItem from="1683793208350" duration="8327000" />
       <workItem from="1683854479718" duration="69000" />
-      <workItem from="1683970305850" duration="8496000" />
+      <workItem from="1683970305850" duration="15776000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -197,7 +198,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683854508946</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Finally got a* working with the cave terrain">
+      <created>1683979075053</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1683979075053</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -228,36 +236,24 @@
     <MESSAGE value="Fixed raycast bug" />
     <MESSAGE value="small changes" />
     <MESSAGE value="more work on pathfinding" />
-    <option name="LAST_COMMIT_MESSAGE" value="more work on pathfinding" />
+    <MESSAGE value="Finally got a* working with the cave terrain" />
+    <option name="LAST_COMMIT_MESSAGE" value="Finally got a* working with the cave terrain" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>200</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="205" containingFunctionPresentation="method 'GetNeighbours'">
+          <line>205</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="205" containingFunctionPresentation="method 'GetTerrainValue'">
             <startOffsets>
-              <option value="6517" />
+              <option value="7365" />
             </startOffsets>
             <endOffsets>
-              <option value="6610" />
+              <option value="7379" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="85" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>117</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="122" containingFunctionPresentation="method 'AStarPathfinding'">
-            <startOffsets>
-              <option value="3965" />
-            </startOffsets>
-            <endOffsets>
-              <option value="3971" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="86" />
+          <option name="timeStamp" value="88" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

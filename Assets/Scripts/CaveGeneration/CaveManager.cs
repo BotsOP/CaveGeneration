@@ -44,7 +44,7 @@ public class CaveManager : MonoBehaviour
         chunks = new CaveChunk[amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal];
         physicsManager = new CavePhysicsManager(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, caveMask);
         terrainCarver = new CaveTerrainCarver(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, caveMask);
-        pathFinding = new CavePathfinding(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, chunkSize);
+        pathFinding = new CavePathfinding(chunks, caveBounds, amountChunksHorizontal, amountChunksVertical, chunkSize, isoLevel);
 
         for (int i = 0; i < chunks.GetLength(0); i++)
         {
@@ -86,6 +86,8 @@ public class CaveManager : MonoBehaviour
         
         EventSystem<MyRay, float, float>.Unsubscribe(EventType.CARVE_TERRAIN, CarveTerrain);
         EventSystem<Vector3>.Unsubscribe(EventType.UPDATE_CHUNKS, PlaceChunksAroundPlayer);
+        
+        pathFinding.OnDestroy();
     }
 
     private void CarveTerrain(MyRay _ray, float _carveSize, float _carveSpeed)
@@ -129,7 +131,6 @@ public class CaveManager : MonoBehaviour
             List<Vector3Int> locations = pathFinding.AStarPathfinding(sphere1.position, sphere2.position);
             if (locations == null)
             {
-                Debug.LogWarning("Didnt find path");
                 return;
             }
             

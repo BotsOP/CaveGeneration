@@ -2,6 +2,7 @@
 #pragma kernel GetNeighbours2
 #pragma kernel GetNeighbours4
 #pragma kernel GetNeighbours8
+#pragma kernel GetSinglePixel
 
 RWTexture3D<float> noiseTex;
 Texture3D<float> noiseTexAdjacent1;
@@ -16,7 +17,18 @@ int chunkSize;
 
 RWStructuredBuffer<float> neighbours;
 
-[numthreads(1,1,1)]
+[numthreads(8,1,1)]
+void GetSinglePixel (uint id : SV_DispatchThreadID)
+{
+	int newX = currentPos.x + id % 2;
+	int newY = currentPos.y + id / 4;
+	int newZ = currentPos.z + id % 4 / 2;
+	int3 pos = int3(newX, newY, newZ);
+	
+	neighbours[id] = noiseTex[pos];
+}
+
+[numthreads(32,1,1)]
 void GetNeighbours1 (uint id : SV_DispatchThreadID)
 {
 	if(id > 26)
