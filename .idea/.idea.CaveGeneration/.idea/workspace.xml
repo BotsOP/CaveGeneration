@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +17,21 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/CaveGeneration/CaveManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
@@ -88,10 +99,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="12684">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="16372">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="12684" />
+      <option name="pid" value="16372" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -120,6 +131,8 @@
       <workItem from="1683457392170" duration="8223000" />
       <workItem from="1683498199002" duration="653000" />
       <workItem from="1683793208350" duration="8327000" />
+      <workItem from="1683854479718" duration="69000" />
+      <workItem from="1683970305850" duration="8496000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -177,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683631451778</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="more work on pathfinding">
+      <created>1683854508946</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1683854508946</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -207,75 +227,37 @@
     <MESSAGE value="Removed multiple ray optimization since its concept doesnt fucking optimize anything. Improved usability of the raycast function" />
     <MESSAGE value="Fixed raycast bug" />
     <MESSAGE value="small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="small changes" />
+    <MESSAGE value="more work on pathfinding" />
+    <option name="LAST_COMMIT_MESSAGE" value="more work on pathfinding" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>697</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="700" containingFunctionPresentation="method 'ReconstructPath'">
+          <line>200</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="205" containingFunctionPresentation="method 'GetNeighbours'">
             <startOffsets>
-              <option value="39019" />
+              <option value="6517" />
             </startOffsets>
             <endOffsets>
-              <option value="39031" />
+              <option value="6610" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="64" />
+          <option name="timeStamp" value="85" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>89</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="91" containingFunctionPresentation="method 'FindPath'">
+          <line>117</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="122" containingFunctionPresentation="method 'AStarPathfinding'">
             <startOffsets>
-              <option value="2934" />
+              <option value="3965" />
             </startOffsets>
             <endOffsets>
-              <option value="2969" />
+              <option value="3971" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="65" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>86</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="86" containingFunctionPresentation="method 'FindPath'">
-            <startOffsets>
-              <option value="2902" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2914" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="67" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>81</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="81" containingFunctionPresentation="method 'FindPath'">
-            <startOffsets>
-              <option value="2811" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2835" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs</url>
-          <line>72</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CavePathfinding.cs" initialLine="72" containingFunctionPresentation="method 'FindPath'">
-            <startOffsets>
-              <option value="2521" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2588" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="71" />
+          <option name="timeStamp" value="86" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

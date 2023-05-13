@@ -16,6 +16,7 @@ public class CaveManager : MonoBehaviour
     [SerializeField, Range(1, 32)] private int amountChunksVertical;
     [SerializeField, Range(0.1f, 1)] private float caveScale;
     [SerializeField] private LayerMask caveMask;
+    public RenderTexture test;
     public Transform raycastCursor;
     public Transform sphere1;
     public Transform sphere2;
@@ -59,6 +60,8 @@ public class CaveManager : MonoBehaviour
                 }
             }
         }
+        test = chunks[0, 0, 0].noiseTex;
+        
         previousObjects = new List<GameObject>();
 
         EventSystem<MyRay, float, float>.Subscribe(EventType.CARVE_TERRAIN, CarveTerrain);
@@ -122,12 +125,21 @@ public class CaveManager : MonoBehaviour
                 Destroy(tempObject);
             }
             previousObjects.Clear();
-
-            List<Location> locations = pathFinding.FindPath(sphere1.position, sphere2.position);
+        
+            List<Vector3Int> locations = pathFinding.AStarPathfinding(sphere1.position, sphere2.position);
+            if (locations == null)
+            {
+                Debug.LogWarning("Didnt find path");
+                return;
+            }
+            
             foreach (var location in locations)
             {
-                previousObjects.Add(Instantiate(sphere1, location.pos, Quaternion.identity).gameObject);
+                previousObjects.Add(Instantiate(sphere1, location, Quaternion.identity).gameObject);
             }
+            Vector3 chunkIndex = GetChunkIndex(Vector3.forward);
+            chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z].GenerateMesh();
+            test = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z].noiseTex;
         }
 
         // if (Input.GetKeyDown(KeyCode.C))
@@ -174,6 +186,13 @@ public class CaveManager : MonoBehaviour
             //Debug.Log($"shifted chunks forward");
             AddChunksForward();
         }
+    }
+    
+    private Vector3 GetChunkIndex(Vector3 _pos)
+    {
+        return _pos.Remap(
+            caveBounds[0], caveBounds[1], Vector3.zero,
+            new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
     }
 
     #region AddChunks

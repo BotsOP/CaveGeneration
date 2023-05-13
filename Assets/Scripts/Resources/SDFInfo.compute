@@ -3,7 +3,7 @@
 #pragma kernel GetNeighbours4
 #pragma kernel GetNeighbours8
 
-Texture3D<float> noiseTex;
+RWTexture3D<float> noiseTex;
 Texture3D<float> noiseTexAdjacent1;
 Texture3D<float> noiseTexAdjacent2;
 Texture3D<float> noiseTexAdjacent3;
@@ -16,12 +16,17 @@ int chunkSize;
 
 RWStructuredBuffer<float> neighbours;
 
-[numthreads(32,1,1)]
+[numthreads(1,1,1)]
 void GetNeighbours1 (uint id : SV_DispatchThreadID)
 {
+	if(id > 26)
+	{
+		return;
+	}
+	
 	int newX = currentPos.x + id % 3 - 1;
 	int newY = currentPos.y + id / 9 - 1;
-	int newZ = currentPos.z + id / 3 - 1;
+	int newZ = currentPos.z + id % 9 / 3 - 1;
 	int3 neighbourPos = int3(newX, newY, newZ);
 
 	neighbours[id] = noiseTex[neighbourPos];

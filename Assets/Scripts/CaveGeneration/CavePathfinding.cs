@@ -2,18 +2,26 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Location
-{
-    public int X, Y, Z;
-    public int G, H;
-    public Location Parent;
-    public int F => G + H;
-
-    public Vector3 pos => new Vector3(X, Y, Z);
-}
-
 public class CavePathfinding
 {
+    public class Node
+    {
+        public Vector3Int position;
+        public Node parent;
+        public float gScore;
+        public float hScore;
+        public float fScore;
+
+        public Node(Vector3Int position, Node parent, float gScore, float hScore)
+        {
+            this.position = position;
+            this.parent = parent;
+            this.gScore = gScore;
+            this.hScore = hScore;
+            fScore = gScore + hScore;
+        }
+    }
+
     private CaveChunk[,,] chunks;
     private Vector3[] caveBounds;
     private int amountChunksHorizontal;
@@ -31,69 +39,137 @@ public class CavePathfinding
         amountChunksVertical = _amountChunksVertical;
         chunkSize = _chunkSize;
         chunkScale = _chunkScale;
-        
+
         getSDFInfoShader = Resources.Load<ComputeShader>("SDFInfo");
 
         neighboursBuffer = new ComputeBuffer(27, sizeof(float), ComputeBufferType.Structured);
     }
 
-    public List<Location> FindPath(Vector3 _startPos, Vector3 _endPos)
+    public List<Vector3Int> AStarPathfinding(Vector3 _start, Vector3 _goal)
     {
-        int endX = (int)_endPos.x;
-        int endY = (int)_endPos.y;
-        int endZ = (int)_endPos.z;
-        List<Location> openList = new List<Location>();
-        List<Location> closedList = new List<Location>();
+        Vector3Int start = new Vector3Int((int)_start.x, (int)_start.y, (int)_start.z);
+        Vector3Int goal = new Vector3Int((int)_goal.x, (int)_goal.y, (int)_goal.z);
 
-        openList.Add(new Location { X = (int)_startPos.x, Y = (int)_startPos.y, Z = (int)_startPos.z, G = 0, 
-            H = CalculateHeuristic((int)_startPos.x, (int)_startPos.y, (int)_startPos.z, endX, endY, endZ) });
-        closedList.Add(openList[0]);
+        List<Node> openList = new List<Node>();
+        HashSet<Vector3Int> closedList = new HashSet<Vector3Int>();
+        Dictionary<Vector3Int, Node> nodeLookup = new Dictionary<Vector3Int, Node>();
 
+        Node startNode = new Node(start, null, 0, EuclideanHeuristic(start, goal));
+        openList.Add(startNode);
+        nodeLookup.Add(start, startNode);
+
+        int count = 0;
+        
         while (openList.Count > 0)
         {
-            Location current = openList[0];
-            float[] neighbours = GetNeighbours(_startPos);
-            
+            Node current = GetNodeWithLowestFScore(openList);
+            openList.Remove(current);
+
+            if (current.position == goal)
+            {
+                return ConstructPath(current);
+            }
+
+            closedList.Add(current.position);
+
+            float[] neighbours = GetNeighbours(current.position);
+
             for (int i = 0; i < 27; i++)
             {
                 //0 is wall and 1 is air
                 float isAir = neighbours[i];
 
-                if (isAir >= 0)
+                int newX = i % 3 - 1;
+                int newY = i / 9 - 1;
+                int newZ = i % 9 / 3 - 1;
+
+                Vector3Int neighborPosition = current.position + new Vector3Int(newX, newY, newZ);
+                
+                if (closedList.Contains(neighborPosition))
                 {
-                    int newX = current.X + i % 3 - 1;
-                    int newY = current.Y + i / 9 - 1;
-                    int newZ = current.Z + i / 3 - 1;
-                    
-                    int g = current.G + 1;
-                    int h = CalculateHeuristic(newX, newY, newZ, endX, endY, endZ);
+                    continue;
+                }
+                if (isAir < 0.5f)
+                {
+                    continue;
+                }
 
-                    Location adjacentSquare = new Location { X = newX, Y = newY, Z = newZ, G = g, H = h, Parent = current};
+                float gScore = current.gScore + Vector3Int.Distance(current.position, neighborPosition);
+                float hScore = EuclideanHeuristic(neighborPosition, goal);
+                float fScore = gScore + hScore;
 
-                    if (openList.Count == 0 || g <= openList[0].G && h < openList[0].H)
-                    {
-                        openList.Insert(0, adjacentSquare);
-                    }
+                if (!nodeLookup.TryGetValue(neighborPosition, out Node neighborNode))
+                {
+                    neighborNode = new Node(neighborPosition, current, gScore, hScore);
+                    nodeLookup.Add(neighborPosition, neighborNode);
+                    openList.Add(neighborNode);
+                }
+                else if (gScore < neighborNode.gScore)
+                {
+                    neighborNode.parent = current;
+                    neighborNode.gScore = gScore;
+                    neighborNode.fScore = fScore;
                 }
             }
 
-            current = openList[0];
-            openList.Remove(current);
-            closedList.Add(current);
+            count++;
+            if (count > 100000)
+            {
+                break;
+            }
         }
 
-        if (openList.Count == 0)
+        return null;// No path found
+    }
+
+    public Node GetNodeWithLowestFScore(List<Node> nodeList)
+    {
+        Node lowestNode = null;
+        float lowestFScore = float.MaxValue;
+
+        foreach (Node node in nodeList)
         {
-            return null;
+            if (node.fScore < lowestFScore)
+            {
+                lowestNode = node;
+                lowestFScore = node.fScore;
+            }
         }
 
-        return ReconstructPath(closedList);
+        return lowestNode;
+    }
+
+    public List<Vector3Int> ConstructPath(Node goal)
+    {
+        List<Vector3Int> path = new List<Vector3Int>();
+        Node currentNode = goal;
+
+        while (currentNode != null)
+        {
+            path.Add(currentNode.position);
+            currentNode = currentNode.parent;
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+    public float EuclideanHeuristic(Vector3Int a, Vector3Int b)
+    {
+        return Vector3Int.Distance(a, b);
+    }
+
+    private Vector3 GetChunkIndex(Vector3 _pos)
+    {
+        return _pos.Remap(
+            caveBounds[0], caveBounds[1], Vector3.zero,
+            new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
     }
 
     private float[] GetNeighbours(Vector3 _pos)
     {
         float[] neighbours = new float[27];
-        
+
         Vector3 chunkIndex = GetChunkIndex(_pos);
         CaveChunk chunk = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z];
         Vector3 subChunkPos = new Vector3(_pos.x - chunk.position.x, _pos.y - chunk.position.y, _pos.z - chunk.position.z);
@@ -105,19 +181,22 @@ public class CavePathfinding
         bool yTooDownward = subChunkPos.y == 0;
         bool yTooUpward = (int)subChunkPos.y == chunkSize - 1;
 
+        int kernelID;
+        
         if (!xTooLeft && !xTooRight && !zTooBackward && !zTooForward && !yTooDownward && !yTooUpward)
         {
-            getSDFInfoShader.SetTexture(0, "noiseTex", chunk.noiseTex);
-            getSDFInfoShader.SetBuffer(0, "neighbours", neighboursBuffer);
+            kernelID = getSDFInfoShader.FindKernel("GetNeighbours1");
+            getSDFInfoShader.SetTexture(kernelID, "noiseTex", chunk.noiseTex);
+            getSDFInfoShader.SetBuffer(kernelID, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
-            getSDFInfoShader.Dispatch(0, 1, 1, 1);
-            
+
+            getSDFInfoShader.Dispatch(kernelID, 32, 1, 1);
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
-        
+
         //all faces
         if ((xTooLeft || xTooRight) && !zTooBackward && !zTooForward && !yTooDownward && !yTooUpward)
         {
@@ -125,15 +204,15 @@ public class CavePathfinding
             if (xTooLeft)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -141,15 +220,15 @@ public class CavePathfinding
             if (xTooRight)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -160,15 +239,15 @@ public class CavePathfinding
             if (zTooBackward)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -176,15 +255,15 @@ public class CavePathfinding
             if (zTooForward)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -195,15 +274,15 @@ public class CavePathfinding
             if (yTooDownward)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -211,15 +290,15 @@ public class CavePathfinding
             if (yTooUpward)
             {
                 CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
                 getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
                 getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
                 getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
                 getSDFInfoShader.SetVector("currentPos", subChunkPos);
                 getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
                 getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
                 neighboursBuffer.GetData(neighbours);
                 return neighbours;
             }
@@ -230,7 +309,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -238,9 +317,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -249,7 +328,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z + 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -257,9 +336,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -268,7 +347,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -276,9 +355,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -287,7 +366,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -295,9 +374,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -306,7 +385,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -314,9 +393,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -325,7 +404,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -333,9 +412,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -344,7 +423,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -352,9 +431,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -363,7 +442,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -371,9 +450,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -382,7 +461,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -390,9 +469,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -401,7 +480,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -409,9 +488,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -420,7 +499,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -428,9 +507,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -439,7 +518,7 @@ public class CavePathfinding
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent4", chunkAdjacent1.noiseTex);
@@ -447,9 +526,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -458,12 +537,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y , (int)chunkIndex.z - 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -475,9 +554,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -485,12 +564,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y , (int)chunkIndex.z - 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -502,9 +581,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -512,12 +591,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y , (int)chunkIndex.z + 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -529,9 +608,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -539,12 +618,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y , (int)chunkIndex.z + 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x - 1, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -556,9 +635,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -566,12 +645,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y , (int)chunkIndex.z - 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -583,9 +662,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -593,12 +672,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y , (int)chunkIndex.z - 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y + 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -610,9 +689,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -620,12 +699,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z + 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y , (int)chunkIndex.z + 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y + 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y + 1, (int)chunkIndex.z + 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y + 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -637,9 +716,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -647,12 +726,12 @@ public class CavePathfinding
         {
             CaveChunk chunkAdjacent = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z];
             CaveChunk chunkAdjacent1 = chunks[(int)chunkIndex.x, (int)chunkIndex.y, (int)chunkIndex.z - 1];
-            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y , (int)chunkIndex.z - 1];
+            CaveChunk chunkAdjacent2 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent3 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y - 1, (int)chunkIndex.z];
             CaveChunk chunkAdjacent4 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent5 = chunks[(int)chunkIndex.x + 1, (int)chunkIndex.y - 1, (int)chunkIndex.z - 1];
             CaveChunk chunkAdjacent6 = chunks[(int)chunkIndex.x, (int)chunkIndex.y - 1, (int)chunkIndex.z];
-                
+
             getSDFInfoShader.SetTexture(1, "noiseTex", chunk.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent1", chunkAdjacent.noiseTex);
             getSDFInfoShader.SetTexture(1, "noiseTexAdjacent2", chunkAdjacent1.noiseTex);
@@ -664,9 +743,9 @@ public class CavePathfinding
             getSDFInfoShader.SetBuffer(1, "neighbours", neighboursBuffer);
             getSDFInfoShader.SetVector("currentPos", subChunkPos);
             getSDFInfoShader.SetInt("chunkSize", chunkSize);
-            
+
             getSDFInfoShader.Dispatch(1, 1, 1, 1);
-            
+
             neighboursBuffer.GetData(neighbours);
             return neighbours;
         }
@@ -674,33 +753,4 @@ public class CavePathfinding
         return neighbours;
     }
 
-    private int CalculateHeuristic(int x1, int y1, int z1, int x2, int y2, int z2)
-    {
-        int dx = Math.Abs(x2 - x1);
-        int dy = Math.Abs(y2 - y1);
-        int dz = Math.Abs(z2 - z1);
-
-        return dx + dy + dz;
-    }
-
-    private List<Location> ReconstructPath(List<Location> closedList)
-    {
-        List<Location> path = new List<Location>();
-
-        Location current = closedList[closedList.Count - 1];
-        while (current != null)
-        {
-            path.Add(current);
-            current = current.Parent;
-        }
-
-        path.Reverse();
-        return path;
-    }
-    
-    private Vector3 GetChunkIndex(Vector3 _pos)
-    {
-        return _pos.Remap(caveBounds[0], caveBounds[1], Vector3.zero, 
-            new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
-    }
 }
