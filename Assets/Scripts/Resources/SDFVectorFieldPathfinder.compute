@@ -1,0 +1,37 @@
+#pragma kernel FloodSDF
+
+int3 dirs[6] =
+	{
+		int3(1, 0, 0),
+		int3(-1, 0, 0),
+		int3(0, 1, 0),
+		int3(0, -1, 0),
+		int3(0, 0, 1),
+		int3(0, 0, -1),
+	};
+
+Texture3D<float> noiseTex;
+RWTexture3D<float4> vectorField;
+RWStructuredBuffer<int> counter;
+ConsumeStructuredBuffer<int3> consumePoints;
+AppendStructuredBuffer<int3> appendPoints;
+int amountPoints;
+float isoLevel;
+
+[numthreads(256,1,1)]
+void FloodSDF (uint3 id : SV_DispatchThreadID)
+{
+	int3 startPos = consumePoints.Consume();
+	int3 currentPos = startPos + dirs[id.y];
+	
+	if(noiseTex[currentPos] < isoLevel || vectorField[currentPos].w > 0 ||
+		currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||
+		currentPos.x == 32 || currentPos.y == 32 || currentPos.z == 32)
+	{
+		return;
+	}
+
+	InterlockedAdd(counter[0], 1);
+	vectorField[currentPos] = float4(-dirs[id.y], 1);
+	appendPoints.Append(currentPos);
+}

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using Utils;
 
-public class CavePathfinding
+[RequireComponent(typeof(CaveManager))]
+public class CavePathfinding : MonoBehaviour
 {
     public class Node
     {
@@ -24,54 +26,83 @@ public class CavePathfinding
     }
 
     public static CavePathfinding instance;
-    private CaveChunk[,,] chunks;
-    private Vector3[] caveBounds;
-    private int amountChunksHorizontal;
-    private int amountChunksVertical;
+    private CaveManager caveManager;
+    private Queue<PathResult> results = new Queue<PathResult>();
     private ComputeShader getSDFInfoShader;
-    private int chunkSize;
     private ComputeBuffer neighboursBuffer;
-    private float isoLevel;
+    private int chunkSize => caveManager.chunkSize;
+    private CaveChunk[,,] chunks => caveManager.chunks;
+    private Vector3[] caveBounds => caveManager.caveBounds;
+    private int amountChunksHorizontal => caveManager.amountChunksHorizontal;
+    private int amountChunksVertical => caveManager.amountChunksVertical;
+    private float isoLevel => caveManager.isoLevel;
 
-    public CavePathfinding(CaveChunk[,,] _chunks, Vector3[] _caveBounds, int _amountChunksHorizontal, int _amountChunksVertical, int _chunkSize, float _isoLevel)
+    private void OnEnable()
     {
-        chunks = _chunks;
-        caveBounds = _caveBounds;
-        amountChunksHorizontal = _amountChunksHorizontal;
-        amountChunksVertical = _amountChunksVertical;
-        chunkSize = _chunkSize;
-        isoLevel = _isoLevel;
-
+        caveManager = gameObject.GetComponent<CaveManager>();
         getSDFInfoShader = Resources.Load<ComputeShader>("SDFInfo");
-
         neighboursBuffer = new ComputeBuffer(27, sizeof(float), ComputeBufferType.Structured);
-
         instance = this;
     }
 
-    public void OnDestroy()
+    private void OnDisable()
     {
         neighboursBuffer.Dispose();
         neighboursBuffer = null;
     }
+    
+    void Update() {
+        if (results.Count > 0) 
+        {
+            int itemsInQueue = results.Count;
+            lock (results) 
+            {
+                for (int i = 0; i < itemsInQueue; i++) {
+                    PathResult result = results.Dequeue ();
+                    result.callback (result.path, result.success);
+                }
+            }
+        }
+    }
 
-    public List<Vector3Int> AStarPathfinding(Vector3 _start, Vector3 _goal)
+    public static void RequestPath(PathRequest request) 
     {
-        float startTerrainValue = GetTerrainValue(_start);
-        float endTerrainValue = GetTerrainValue(_goal);
+        ThreadStart threadStart = delegate 
+        {
+            instance.AStarPathfinding(request, instance.FinishedProcessingPath);
+        };
+        threadStart.Invoke ();
+    }
+
+    public void FinishedProcessingPath(PathResult result) 
+    {
+        lock (results) 
+        {
+            results.Enqueue (result);
+        }
+    }
+
+    public void AStarPathfinding(PathRequest request, Action<PathResult> callback)
+    {
+        float startTerrainValue = GetTerrainValue(request.pathStart);
+        float endTerrainValue = GetTerrainValue(request.pathEnd);
         if (!(startTerrainValue > isoLevel && startTerrainValue < isoLevel + 0.4f))
         {
             Debug.LogWarning($"Start pos is not in a valid position, {startTerrainValue}");
-            return null;
+            
+            callback (new PathResult(null, false, request.callback));// No path found
+            return;
         }
         if (!(endTerrainValue > isoLevel && endTerrainValue < isoLevel + 0.4f))
         {
             Debug.LogWarning($"End pos is not in a valid position, {endTerrainValue}");
-            return null;
+            
+            callback (new PathResult(null, false, request.callback));// No path found
+            return;
         }
         
-        Vector3Int start = new Vector3Int(Mathf.RoundToInt(_start.x), Mathf.RoundToInt(_start.y), Mathf.RoundToInt(_start.z));
-        Vector3Int goal = new Vector3Int(Mathf.RoundToInt(_goal.x), Mathf.RoundToInt(_goal.y), Mathf.RoundToInt(_goal.z));
+        Vector3Int start = new Vector3Int(Mathf.RoundToInt(request.pathStart.x), Mathf.RoundToInt(request.pathStart.y), Mathf.RoundToInt(request.pathStart.z));
+        Vector3Int goal = new Vector3Int(Mathf.RoundToInt(request.pathEnd.x), Mathf.RoundToInt(request.pathEnd.y), Mathf.RoundToInt(request.pathEnd.z));
 
         PriorityQueue<Node, float> openList = new PriorityQueue<Node, float>();
         HashSet<Vector3Int> closedList = new HashSet<Vector3Int>();
@@ -90,7 +121,8 @@ public class CavePathfinding
             if (Vector3Int.Distance(current.position, goal) < 2)
             {
                 Debug.Log(count);
-                return ConstructPath(current);
+                callback (new PathResult (ConstructPath(current), true, request.callback));
+                return;
             }
 
             closedList.Add(current.position);
@@ -145,7 +177,7 @@ public class CavePathfinding
             }
         }
         
-        return null;// No path found
+        callback (new PathResult(null, false, request.callback));// No path found
     }
 
     public List<Vector3Int> ConstructPath(Node goal)
@@ -163,7 +195,7 @@ public class CavePathfinding
         return path;
     }
 
-    public float EuclideanHeuristic(Vector3Int a, Vector3Int b)
+    private float EuclideanHeuristic(Vector3Int a, Vector3Int b)
     {
         return Vector3Int.Distance(a, b);
     }
@@ -177,6 +209,7 @@ public class CavePathfinding
 
     public float GetTerrainValue(Vector3 _worldPos)
     {
+        //This doesnt work properly when its at the edge of a chunk but I dont care
         float[] corners = new float[27];
         
         Vector3 chunkIndex = GetChunkIndex(_worldPos);
@@ -792,5 +825,30 @@ public class CavePathfinding
 
         return neighbours;
     }
+}
 
+
+public struct PathResult {
+    public List<Vector3Int> path;
+    public bool success;
+    public Action<List<Vector3Int>, bool> callback;
+
+    public PathResult (List<Vector3Int> path, bool success, Action<List<Vector3Int>, bool> callback)
+    {
+        this.path = path;
+        this.success = success;
+        this.callback = callback;
+    }
+}
+
+public struct PathRequest {
+    public Vector3 pathStart;
+    public Vector3 pathEnd;
+    public Action<List<Vector3Int>, bool> callback;
+
+    public PathRequest(Vector3 _start, Vector3 _end, Action<List<Vector3Int>, bool> _callback) {
+        pathStart = _start;
+        pathEnd = _end;
+        callback = _callback;
+    }
 }

@@ -10,13 +10,13 @@ public class CaveChunk
     public GameObject gameObject;
     public MeshFilter meshFilter;
     public List<GameObject> decorations;
+    public float isoLevel;
     private ComputeShader caveGenerationShader;
     private ComputeShader noiseGenerationShader;
     private Vector3 threadGroupSizeOut;
     private Vector3 threadGroupSize;
     private int kernelIndex;
     private int chunkSize;
-    private float isoLevel;
     private Bounds meshBounds;
     public GraphicsBuffer vertexBuffer;
     public GraphicsBuffer indexBuffer;
