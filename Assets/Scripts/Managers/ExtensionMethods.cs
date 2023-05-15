@@ -27,6 +27,12 @@ public static class ExtensionMethods
         GL.Clear(_clearDepth, _clearColor, _color);
         Graphics.SetRenderTarget(null);
     }
+    public static void Clear(this RenderTexture _rt, bool _clearDepth, bool _clearColor, Color _color)
+    {
+        Graphics.SetRenderTarget(_rt);
+        GL.Clear(_clearDepth, _clearColor, _color);
+        Graphics.SetRenderTarget(null);
+    }
 
     public static int GetIndexBufferStride(this Mesh mesh)
     {

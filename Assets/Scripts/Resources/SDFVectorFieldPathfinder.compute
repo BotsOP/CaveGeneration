@@ -1,78 +1,115 @@
 #pragma kernel FloodSDF
-
-
+#pragma kernel ClearSDF
 
 Texture3D<float> noiseTex;
+
+Texture3D<float> noiseTexBottomLeftBack;
+Texture3D<float> noiseTexBottomMiddleBack;
+Texture3D<float> noiseTexBottomRightBack;
+Texture3D<float> noiseTexBottomLeftMiddle;
+Texture3D<float> noiseTexBottomMiddleMiddle;
+Texture3D<float> noiseTexBottomRightMiddle;
+Texture3D<float> noiseTexBottomLeftForward;
+Texture3D<float> noiseTexBottomMiddleForward;
+Texture3D<float> noiseTexBottomRightForward;
+
+Texture3D<float> noiseTexMiddleLeftBack;
+Texture3D<float> noiseTexMiddleMiddleBack;
+Texture3D<float> noiseTexMiddleRightBack;
+Texture3D<float> noiseTexMiddleLeftMiddle;
+Texture3D<float> noiseTexMiddleRightMiddle;
+Texture3D<float> noiseTexMiddleLeftForward;
+Texture3D<float> noiseTexMiddleMiddleForward;
+Texture3D<float> noiseTexMiddleRightForward;
+
+Texture3D<float> noiseTexTopLeftBack;
+Texture3D<float> noiseTexTopMiddleBack;
+Texture3D<float> noiseTexTopRightBack;
+Texture3D<float> noiseTexTopLeftMiddle;
+Texture3D<float> noiseTexTopMiddleMiddle;
+Texture3D<float> noiseTexTopRightMiddle;
+Texture3D<float> noiseTexTopLeftForward;
+Texture3D<float> noiseTexTopMiddleForward;
+Texture3D<float> noiseTexTopRightForward;
+
 RWTexture3D<float4> vectorField;
 RWStructuredBuffer<int> counter;
-StructuredBuffer<int3> seedPoints;
+ConsumeStructuredBuffer<int3> consumePoints;
 AppendStructuredBuffer<int3> appendPoints;
 int amountPoints;
 float isoLevel;
 
-[numthreads(256,1,1)]
-void FloodSDF (uint3 id : SV_DispatchThreadID)
+groupshared int3 cachedStartPos[1][26];
+
+[numthreads(1,26,1)]
+void FloodSDF (uint3 localId : SV_GroupThreadID)
 {
-	if(id.x >= (uint)amountPoints)
-	{
-		return;
-	}
-	
-	// int3 dirs[26] =
+	// if(globalID.x >= (uint)amountPoints)
 	// {
-	// 	int3(-1, -1, -1),
-	// 	int3(0, -1, -1),
-	// 	int3(1, -1, -1),
-	// 	int3(-1, -1, 0),
-	// 	int3(0, -1, 0),
-	// 	int3(1, -1, 0),
-	// 	int3(-1, -1, 1),
-	// 	int3(0, -1, 1),
-	// 	int3(1, -1, 1),
-	//
-	// 	int3(-1, 0, -1),
-	// 	int3(0, 0, -1),
-	// 	int3(1, 0, -1),
-	// 	int3(-1, 0, 0),
-	// 	int3(1, 0, 0),
-	// 	int3(-1, 0, 1),
-	// 	int3(0, 0, 1),
-	// 	int3(1, 0, 1),
-	//
-	// 	int3(-1, 1, -1),
-	// 	int3(0, 1, -1),
-	// 	int3(1, 1, -1),
-	// 	int3(-1, 1, 0),
-	// 	int3(0, 1, 0),
-	// 	int3(1, 1, 0),
-	// 	int3(-1, 1, 1),
-	// 	int3(0, 1, 1),
-	// 	int3(1, 1, 1),
-	// };
-
-	int3 dirs[6] =
+	// 	return;
+	// }
+	
+	int3 dirs[26] =
 	{
-		int3(1, 0, 0),
-		int3(-1, 0, 0),
-		int3(0, 1, 0),
+		int3(-1, -1, -1),
+		int3(0, -1, -1),
+		int3(1, -1, -1),
+		int3(-1, -1, 0),
 		int3(0, -1, 0),
-		int3(0, 0, 1),
+		int3(1, -1, 0),
+		int3(-1, -1, 1),
+		int3(0, -1, 1),
+		int3(1, -1, 1),
+	
+		int3(-1, 0, -1),
 		int3(0, 0, -1),
+		int3(1, 0, -1),
+		int3(-1, 0, 0),
+		int3(1, 0, 0),
+		int3(-1, 0, 1),
+		int3(0, 0, 1),
+		int3(1, 0, 1),
+	
+		int3(-1, 1, -1),
+		int3(0, 1, -1),
+		int3(1, 1, -1),
+		int3(-1, 1, 0),
+		int3(0, 1, 0),
+		int3(1, 1, 0),
+		int3(-1, 1, 1),
+		int3(0, 1, 1),
+		int3(1, 1, 1),
 	};
+
+	if(localId.y == 0)
+	{
+		cachedStartPos[localId.x][localId.y] = consumePoints.Consume();
+	}
 	
-	int3 startPos = seedPoints[id.x];
-	int3 currentPos = startPos + dirs[id.y];
+	GroupMemoryBarrierWithGroupSync();
 	
+	int3 dir = dirs[localId.y];
+
+	int3 currentPos = cachedStartPos[localId.x][0] + dir;
+
 	if(
-		noiseTex[currentPos] < isoLevel ||
-		vectorField[currentPos].w > 0 ||
-		currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||
-		currentPos.x == 32 || currentPos.y == 32 || currentPos.z == 32)
+	noiseTex[currentPos] < isoLevel ||
+	//noiseTex[currentPos] > isoLevel + 0.3 ||
+	vectorField[currentPos].w > 0 ||
+	currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||
+	currentPos.x == 32 || currentPos.y == 32 || currentPos.z == 32)
 	{
 		return;
 	}
-
+		
 	InterlockedAdd(counter[0], 1);
-	vectorField[currentPos] = float4(-dirs[id.y], 1);
+	vectorField[currentPos] = float4(-dir, 1);
 	appendPoints.Append(currentPos);
 }
+
+[numthreads(8,8,8)]
+void ClearSDF (uint3 id : SV_DispatchThreadID)
+{
+	vectorField[id] = float4(0,0,0,0);
+}
+

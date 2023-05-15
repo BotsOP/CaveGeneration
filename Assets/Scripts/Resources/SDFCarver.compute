@@ -13,7 +13,7 @@ void RemoveTerrain (uint3 id : SV_DispatchThreadID)
 	float dist = distance(float3(id), carvePos);
 	if(dist < carveSize)
 	{
-		noiseTex[id] = 1;
+		noiseTex[id] = noiseTex[id] + 0.2;
 	}
 }
 
