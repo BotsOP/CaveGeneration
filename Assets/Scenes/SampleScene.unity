@@ -1045,7 +1045,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 2112534325}
   vectorField: {fileID: 0}
-  amountFramesToUpdate: 10
+  combinedNoiseTex: {fileID: 0}
 --- !u!1001 &1556901916
 PrefabInstance:
   m_ObjectHideFlags: 0

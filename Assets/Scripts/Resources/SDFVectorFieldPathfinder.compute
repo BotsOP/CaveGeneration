@@ -1,36 +1,8 @@
 #pragma kernel FloodSDF
 #pragma kernel ClearSDF
+#pragma kernel CombineTexturesCube
 
 Texture3D<float> noiseTex;
-
-Texture3D<float> noiseTexBottomLeftBack;
-Texture3D<float> noiseTexBottomMiddleBack;
-Texture3D<float> noiseTexBottomRightBack;
-Texture3D<float> noiseTexBottomLeftMiddle;
-Texture3D<float> noiseTexBottomMiddleMiddle;
-Texture3D<float> noiseTexBottomRightMiddle;
-Texture3D<float> noiseTexBottomLeftForward;
-Texture3D<float> noiseTexBottomMiddleForward;
-Texture3D<float> noiseTexBottomRightForward;
-
-Texture3D<float> noiseTexMiddleLeftBack;
-Texture3D<float> noiseTexMiddleMiddleBack;
-Texture3D<float> noiseTexMiddleRightBack;
-Texture3D<float> noiseTexMiddleLeftMiddle;
-Texture3D<float> noiseTexMiddleRightMiddle;
-Texture3D<float> noiseTexMiddleLeftForward;
-Texture3D<float> noiseTexMiddleMiddleForward;
-Texture3D<float> noiseTexMiddleRightForward;
-
-Texture3D<float> noiseTexTopLeftBack;
-Texture3D<float> noiseTexTopMiddleBack;
-Texture3D<float> noiseTexTopRightBack;
-Texture3D<float> noiseTexTopLeftMiddle;
-Texture3D<float> noiseTexTopMiddleMiddle;
-Texture3D<float> noiseTexTopRightMiddle;
-Texture3D<float> noiseTexTopLeftForward;
-Texture3D<float> noiseTexTopMiddleForward;
-Texture3D<float> noiseTexTopRightForward;
 
 RWTexture3D<float4> vectorField;
 RWStructuredBuffer<int> counter;
@@ -38,18 +10,19 @@ ConsumeStructuredBuffer<int3> consumePoints;
 AppendStructuredBuffer<int3> appendPoints;
 int amountPoints;
 float isoLevel;
+int chunkSize;
 
-groupshared int3 cachedStartPos[1][26];
+groupshared int3 cachedStartPos[32][26];
 
-[numthreads(1,26,1)]
+[numthreads(32,26,1)]
 void FloodSDF (uint3 localId : SV_GroupThreadID)
 {
 	// if(globalID.x >= (uint)amountPoints)
 	// {
 	// 	return;
 	// }
-	
-	int3 dirs[26] =
+
+	const int3 dirs[26] =
 	{
 		int3(-1, -1, -1),
 		int3(0, -1, -1),
@@ -94,10 +67,10 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 
 	if(
 	noiseTex[currentPos] < isoLevel ||
-	//noiseTex[currentPos] > isoLevel + 0.3 ||
+	//noiseTex[currentPos] >= 1 ||
 	vectorField[currentPos].w > 0 ||
 	currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||
-	currentPos.x == 32 || currentPos.y == 32 || currentPos.z == 32)
+	currentPos.x == chunkSize || currentPos.y == chunkSize || currentPos.z == chunkSize)
 	{
 		return;
 	}
@@ -113,3 +86,183 @@ void ClearSDF (uint3 id : SV_DispatchThreadID)
 	vectorField[id] = float4(0,0,0,0);
 }
 
+
+Texture3D<float> noiseTexBottomLeftBack;
+Texture3D<float> noiseTexBottomMiddleBack;
+Texture3D<float> noiseTexBottomRightBack;
+Texture3D<float> noiseTexBottomLeftMiddle;
+Texture3D<float> noiseTexBottomMiddleMiddle;
+Texture3D<float> noiseTexBottomRightMiddle;
+Texture3D<float> noiseTexBottomLeftForward;
+Texture3D<float> noiseTexBottomMiddleForward;
+Texture3D<float> noiseTexBottomRightForward;
+
+Texture3D<float> noiseTexMiddleLeftBack;
+Texture3D<float> noiseTexMiddleMiddleBack;
+Texture3D<float> noiseTexMiddleRightBack;
+Texture3D<float> noiseTexMiddleLeftMiddle;
+Texture3D<float> noiseTexMiddleRightMiddle;
+Texture3D<float> noiseTexMiddleLeftForward;
+Texture3D<float> noiseTexMiddleMiddleForward;
+Texture3D<float> noiseTexMiddleRightForward;
+
+Texture3D<float> noiseTexTopLeftBack;
+Texture3D<float> noiseTexTopMiddleBack;
+Texture3D<float> noiseTexTopRightBack;
+Texture3D<float> noiseTexTopLeftMiddle;
+Texture3D<float> noiseTexTopMiddleMiddle;
+Texture3D<float> noiseTexTopRightMiddle;
+Texture3D<float> noiseTexTopLeftForward;
+Texture3D<float> noiseTexTopMiddleForward;
+Texture3D<float> noiseTexTopRightForward;
+
+RWTexture3D<float> combinedNoiseTex;
+int chunkSize;
+
+[numthreads(8,8,8)]
+void CombineTexturesCube (uint3 id : SV_DispatchThreadID)
+{
+	int x = id.x / 32;
+	int y = (id.y / 32) * 9;
+	int z = (id.z / 32) * 3;
+	int index = x + y + z;
+	uint3 localPos = uint3(id.x % 32, id.y % 32, id.z % 32);
+
+	if(index == 0)
+	{
+		combinedNoiseTex[id] = noiseTexBottomLeftBack[localPos];
+		return;
+	}
+	if(index == 1)
+	{
+		combinedNoiseTex[id] = noiseTexBottomLeftBack[localPos];
+		return;
+	}
+	if(index == 2)
+	{
+		combinedNoiseTex[id] = noiseTexBottomRightBack[localPos];
+		return;
+	}
+	if(index == 3)
+	{
+		combinedNoiseTex[id] = noiseTexBottomLeftMiddle[localPos];
+		return;
+	}
+	if(index == 4)
+	{
+		combinedNoiseTex[id] = noiseTexBottomMiddleMiddle[localPos];
+		return;
+	}
+	if(index == 5)
+	{
+		combinedNoiseTex[id] = noiseTexBottomRightMiddle[localPos];
+		return;
+	}
+	if(index == 6)
+	{
+		combinedNoiseTex[id] = noiseTexBottomLeftForward[localPos];
+		return;
+	}
+	if(index == 7)
+	{
+		combinedNoiseTex[id] = noiseTexBottomMiddleForward[localPos];
+		return;
+	}
+	if(index == 8)
+	{
+		combinedNoiseTex[id] = noiseTexBottomRightForward[localPos];
+		return;
+	}
+	
+	if(index == 9)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleLeftBack[localPos];
+		return;
+	}
+	if(index == 10)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleMiddleBack[localPos];
+		return;
+	}
+	if(index == 11)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleRightBack[localPos];
+		return;
+	}
+	if(index == 12)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleLeftMiddle[localPos];
+		return;
+	}
+	if(index == 13)
+	{
+		combinedNoiseTex[id] = noiseTex[localPos];
+		return;
+	}
+	if(index == 14)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleRightMiddle[localPos];
+		return;
+	}
+	if(index == 15)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleLeftForward[localPos];
+		return;
+	}
+	if(index == 16)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleMiddleForward[localPos];
+		return;
+	}
+	if(index == 17)
+	{
+		combinedNoiseTex[id] = noiseTexMiddleRightForward[localPos];
+		return;
+	}
+	
+	if(index == 18)
+	{
+		combinedNoiseTex[id] = noiseTexTopLeftBack[localPos];
+		return;
+	}
+	if(index == 19)
+	{
+		combinedNoiseTex[id] = noiseTexTopMiddleBack[localPos];
+		return;
+	}
+	if(index == 20)
+	{
+		combinedNoiseTex[id] = noiseTexTopRightBack[localPos];
+		return;
+	}
+	if(index == 21)
+	{
+		combinedNoiseTex[id] = noiseTexTopLeftMiddle[localPos];
+		return;
+	}
+	if(index == 22)
+	{
+		combinedNoiseTex[id] = noiseTexTopMiddleMiddle[localPos];
+		return;
+	}
+	if(index == 23)
+	{
+		combinedNoiseTex[id] = noiseTexTopRightMiddle[localPos];
+		return;
+	}
+	if(index == 24)
+	{
+		combinedNoiseTex[id] = noiseTexTopLeftForward[localPos];
+		return;
+	}
+	if(index == 25)
+	{
+		combinedNoiseTex[id] = noiseTexTopMiddleForward[localPos];
+		return;
+	}
+	if(index == 26)
+	{
+		combinedNoiseTex[id] = noiseTexTopRightForward[localPos];
+	}
+	
+}

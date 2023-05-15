@@ -14,6 +14,12 @@ public class FollowVectorField : MonoBehaviour
             Debug.Log(moveDirection);
             transform.position += moveDirection;
         }
+
+        if (Time.frameCount % 10 == 0)
+        {
+            Vector3 moveDirection = caveVectorField.GetDirection(transform.position);
+            transform.position += moveDirection;
+        }
     }
     
 }
