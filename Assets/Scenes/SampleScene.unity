@@ -1007,7 +1007,7 @@ MonoBehaviour:
   isoLevel: 0.5
   noiseScale: 0.5
   amountChunksHorizontal: 8
-  amountChunksVertical: 4
+  amountChunksVertical: 2
   caveScale: 1
   caveMask:
     serializedVersion: 2

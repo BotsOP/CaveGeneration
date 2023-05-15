@@ -7,7 +7,6 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(CaveManager))]
 public class CaveVectorField : MonoBehaviour
 {
-    public static CaveVectorField instance;
     public Transform player;
     public RenderTexture vectorField;
     public RenderTexture combinedNoiseTex;
@@ -63,8 +62,6 @@ public class CaveVectorField : MonoBehaviour
         countBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
         countBuffer.SetData(new int[1]);
 
-        instance = this;
-        
         vectorFieldShader.GetKernelThreadGroupSizes(0, out uint threadGroupSizeX, out uint threadGroupSizeY, out uint threadGroupSizeZ);
         threadGroupSize = new Vector3(threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ);
         

@@ -117,7 +117,6 @@ Texture3D<float> noiseTexTopMiddleForward;
 Texture3D<float> noiseTexTopRightForward;
 
 RWTexture3D<float> combinedNoiseTex;
-int chunkSize;
 
 [numthreads(8,8,8)]
 void CombineTexturesCube (uint3 id : SV_DispatchThreadID)
