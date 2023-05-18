@@ -1,31 +1,60 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Managers;
 using UnityEngine;
+using EventType = Managers.EventType;
 
-public class CaveTerrainCarver
+[RequireComponent(typeof(CaveManager)), RequireComponent(typeof(CavePhysicsManager))]
+public class CaveTerrainCarver : MonoBehaviour
 {
-    private CaveChunk[,,] chunks;
-    private Vector3[] caveBounds;
-    private int amountChunksHorizontal;
-    private int amountChunksVertical;
     private ComputeShader caveCarveShader;
-    private LayerMask caveMask;
-    Vector3 threadGroupSize;
+    private Vector3 threadGroupSize;
+    private CaveManager caveManager;
+    private CavePhysicsManager physicsManager;
+    private CaveChunk[,,] chunks => caveManager.chunks;
+    private Vector3[] caveBounds => caveManager.caveBounds;
+    private int amountChunksHorizontal => caveManager.amountChunksHorizontal;
+    private int amountChunksVertical => caveManager.amountChunksVertical;
+    private LayerMask caveMask => caveManager.caveMask;
+    private int chunkSize => caveManager.chunkSize;
 
-    public CaveTerrainCarver(CaveChunk[,,] _chunks, Vector3[] _caveBounds, int _amountChunksHorizontal, int _amountChunksVertical, int _chunkSize, LayerMask _caveMask)
+    private bool vectorFieldEnabled;
+
+    private void OnEnable()
     {
-        chunks = _chunks;
-        caveBounds = _caveBounds;
-        amountChunksHorizontal = _amountChunksHorizontal;
-        amountChunksVertical = _amountChunksVertical;
-        caveMask = _caveMask;
+        caveManager = GetComponent<CaveManager>();
+        physicsManager = GetComponent<CavePhysicsManager>();
+            
         caveCarveShader = Resources.Load<ComputeShader>("SDFCarver");
-        
         caveCarveShader.GetKernelThreadGroupSizes(0, out uint threadGroupSizeX, out uint threadGroupSizeY, out uint threadGroupSizeZ);
         
-        threadGroupSize.x = Mathf.CeilToInt((float)_chunkSize / threadGroupSizeX);
-        threadGroupSize.y = Mathf.CeilToInt((float)_chunkSize / threadGroupSizeY);
-        threadGroupSize.z = Mathf.CeilToInt((float)_chunkSize / threadGroupSizeZ);
+        threadGroupSize.x = Mathf.CeilToInt((float)chunkSize / threadGroupSizeX);
+        threadGroupSize.y = Mathf.CeilToInt((float)chunkSize / threadGroupSizeY);
+        threadGroupSize.z = Mathf.CeilToInt((float)chunkSize / threadGroupSizeZ);
+
+        vectorFieldEnabled = GetComponent<CaveVectorField>() != null;
+        
+        EventSystem<MyRay, float, float>.Subscribe(Managers.EventType.CARVE_TERRAIN, CarveTerrain);
+    }
+
+    private void OnDisable()
+    {
+        EventSystem<MyRay, float, float>.Unsubscribe(Managers.EventType.CARVE_TERRAIN, CarveTerrain);
+    }
+
+    private void CarveTerrain(MyRay _ray, float _carveSize, float _carveSpeed)
+    {
+        if (physicsManager.Raycast(_ray.origin, _ray.direction, out var rayOutput))
+        {
+            // raycastCursor.position = rayOutput.position;
+            // raycastCursor.rotation = Quaternion.LookRotation(rayOutput.normal);
+            RemoveTerrain(rayOutput.position, _carveSize, _carveSpeed);
+            if (vectorFieldEnabled)
+            {
+                EventSystem<bool>.RaiseEvent(EventType.UPDATE_VECTORFIELD, true);
+            }
+        }
     }
 
     //These functions do not yet work with other isolevels

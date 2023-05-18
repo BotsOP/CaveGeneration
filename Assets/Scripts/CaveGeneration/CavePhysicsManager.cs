@@ -3,22 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CavePhysicsManager
+[RequireComponent(typeof(CaveManager))]
+public class CavePhysicsManager : MonoBehaviour
 {
     public static CavePhysicsManager instance;
-    private CaveChunk[,,] chunks;
-    private Vector3[] caveBounds;
-    private int amountChunksHorizontal;
-    private int amountChunksVertical;
-    private LayerMask caveMask;
+    private CaveManager caveManager;
+    private CaveChunk[,,] chunks => caveManager.chunks;
+    private Vector3[] caveBounds => caveManager.caveBounds;
+    private int amountChunksHorizontal => caveManager.amountChunksHorizontal;
+    private int amountChunksVertical => caveManager.amountChunksVertical;
+    private LayerMask caveMask => caveManager.caveMask;
 
-    public CavePhysicsManager(CaveChunk[,,] _chunks, Vector3[] _caveBounds, int _amountChunksHorizontal, int _amountChunksVertical, LayerMask _caveMask)
+    private void OnEnable()
     {
-        chunks = _chunks;
-        caveBounds = _caveBounds;
-        amountChunksHorizontal = _amountChunksHorizontal;
-        amountChunksVertical = _amountChunksVertical;
-        caveMask = _caveMask;
+        caveManager = GetComponent<CaveManager>();
         instance = this;
     }
 
@@ -35,7 +33,7 @@ public class CavePhysicsManager
         }
 
         float lowestDist = float.MaxValue;
-        RayOutput closestPos = new RayOutput();
+        RayOutput closestPos =  new RayOutput();
         
         foreach (var chunkCollider in chunksHit)
         {

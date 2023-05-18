@@ -5,14 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_13_05_2023_20_22__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_13_05_2023_20_22__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2023_09_55__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_14_05_2023_20_53__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_14_05_2023_20_53__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_15_05_2023_11_30__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_15_05_2023_11_30__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_15_05_2023_20_10__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_15_05_2023_20_10__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/AgentAI/FollowVectorField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/AgentAI/FollowVectorField.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFVectorFieldPathfinder.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFVectorFieldPathfinder.compute" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/3DNoise.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/3DNoise.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/FollowVectorField.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/FollowVectorField.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/Includes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/Includes/MarchTables.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/Includes/MarchTables.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/Includes/Noise.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/Includes/Noise.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFVectorFieldPathfinder.compute" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Resources/SDFVectorFieldPathfinder.compute.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Shaders/CaveTriplanar.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Shaders/CaveTriplanar.mat.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Shaders/rock-stone-seamless-pattern_98292-3360.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Shaders/rock-stone-seamless-pattern_98292-3360.jpg.meta" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,19 +53,21 @@
     <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/CaveGeneration.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/FollowVectorField.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/GPUPhysicsShader.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/Includes/Noise.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFCarver.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFInfo.compute" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Resources/SDFVectorFieldPathfinder.compute" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@14.0.4/ShaderLibrary/UnityGBuffer.hlsl" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@14.0.4/Shaders/LitGBufferPass.hlsl" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@14.0.4/Shaders/LitInput.hlsl" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@14.0.4/Shaders/Terrain/TerrainLitDepthNormalsPass.hlsl" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@14.0.4/Shaders/Terrain/TerrainLitPasses.hlsl" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Exarion/Assets/Scripts/Drawing/Drawing.cs" root0="SKIP_HIGHLIGHTING" />
@@ -43,16 +75,15 @@
     <setting file="file://$PROJECT_DIR$/../Exarion/Assets/Scripts/Managers/ExtensionMethods.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../GeometryTestLab/Assets/Scripts/GpuGeometry/NewVine.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Marching-Cubes/Assets/Scripts/Compute/NoiseDensity.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders/UnityComputeShaders - complete/Assets/Shaders/InstancedFlocking.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../VAT_Converter/Assets/Scripts/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../VAT_Converter/Assets/Scripts/VAT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../lvl99-gamejam/Assets/Scripts/MatchDrawing/MatchDrawing.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/501b9c146ac84bf0b10c9b8b35a86ec819ea00/33/40e5690c/PooledList`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8f06425e63004caf99a79845675f751e46a800/bf/7dbc1b61/ThrowHelper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8f06425e63004caf99a79845675f751e46a800/c1/261bf172/Stack`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/6b/298aa147/GraphicsBuffer.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/e9/99bbd2fc/Object.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -99,10 +130,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="4192">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" />
+      <option name="pid" value="4192" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -132,6 +163,10 @@
       <workItem from="1683498199002" duration="653000" />
       <workItem from="1683793208350" duration="8327000" />
       <workItem from="1684076756037" duration="6096000" />
+      <workItem from="1684190121860" duration="2654000" />
+      <workItem from="1684232930121" duration="22570000" />
+      <workItem from="1684314822987" duration="18373000" />
+      <workItem from="1684438337920" duration="5117000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -189,7 +224,21 @@
       <option name="project" value="LOCAL" />
       <updated>1683631451778</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Made the vectorfield a 3x3x3 chunk area">
+      <created>1684190180126</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1684190180126</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fixed small bug">
+      <created>1684190414161</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1684190414161</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -219,23 +268,25 @@
     <MESSAGE value="Removed multiple ray optimization since its concept doesnt fucking optimize anything. Improved usability of the raycast function" />
     <MESSAGE value="Fixed raycast bug" />
     <MESSAGE value="small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="small changes" />
+    <MESSAGE value="Made the vectorfield a 3x3x3 chunk area" />
+    <MESSAGE value="fixed small bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed small bug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs</url>
-          <line>204</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CaveVectorField.cs" initialLine="206" containingFunctionPresentation="method 'GenerateVectorField'">
+          <line>252</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CaveVectorField.cs" initialLine="249" containingFunctionPresentation="method 'ClearVectorField'">
             <startOffsets>
-              <option value="7486" />
+              <option value="9611" />
             </startOffsets>
             <endOffsets>
-              <option value="7543" />
+              <option value="9671" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="100" />
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -244,11 +295,17 @@
         <PinnedItemInfo parentTag="Type#Location" memberName="G" />
         <PinnedItemInfo parentTag="Type#Location" memberName="H" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="z" />
-        <PinnedItemInfo parentTag="Type#Ray" memberName="index" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="x" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="y" />
+        <PinnedItemInfo parentTag="Type#BoidsManager+BoidVel" memberName="neighbourCount" />
+        <PinnedItemInfo parentTag="Type#InstancedFlocking+Boid" memberName="position" />
         <PinnedItemInfo parentTag="Type#RayOutput" memberName="position" />
         <PinnedItemInfo parentTag="Type#CaveGenerator+Vertex" memberName="position" />
+        <PinnedItemInfo parentTag="Type#BoidsManager+BoidVel" memberName="cohesionX" />
+        <PinnedItemInfo parentTag="Type#BoidsManager+BoidVel" memberName="cohesionZ" />
+        <PinnedItemInfo parentTag="Type#BoidsManager+BoidVel" memberName="cohesionY" />
+        <PinnedItemInfo parentTag="Type#Ray" memberName="index" />
+        <PinnedItemInfo parentTag="Type#BoidsManager+Boid" memberName="direction" />
       </pinned-members>
     </pin-to-top-manager>
   </component>

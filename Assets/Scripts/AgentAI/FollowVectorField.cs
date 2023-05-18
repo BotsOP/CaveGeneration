@@ -6,16 +6,17 @@ using UnityEngine;
 public class FollowVectorField : MonoBehaviour
 {
     public CaveVectorField caveVectorField;
+    public bool follow;
+    public int speed = 20;
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.M))
+        if (Input.GetKey(KeyCode.M) && Time.frameCount % speed == 0)
         {
             Vector3 moveDirection = caveVectorField.GetDirection(transform.position);
-            Debug.Log(moveDirection);
             transform.position += moveDirection;
         }
 
-        if (Time.frameCount % 10 == 0)
+        if (Time.frameCount % speed == 0 && follow)
         {
             Vector3 moveDirection = caveVectorField.GetDirection(transform.position);
             transform.position += moveDirection;

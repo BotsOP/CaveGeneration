@@ -11,6 +11,7 @@ AppendStructuredBuffer<int3> appendPoints;
 int amountPoints;
 float isoLevel;
 int chunkSize;
+float3 playerPos;
 
 groupshared int3 cachedStartPos[32][26];
 
@@ -60,6 +61,11 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 	}
 	
 	GroupMemoryBarrierWithGroupSync();
+
+	if(vectorField[cachedStartPos[localId.x][0]].w < isoLevel)
+	{
+		//return;
+	}
 	
 	int3 dir = dirs[localId.y];
 
@@ -68,13 +74,13 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 	if(
 	noiseTex[currentPos] < isoLevel ||
 	//noiseTex[currentPos] >= 1 ||
-	vectorField[currentPos].w > 0 ||
+	vectorField[currentPos].w > 0.5 ||
 	currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||
 	currentPos.x == chunkSize || currentPos.y == chunkSize || currentPos.z == chunkSize)
 	{
 		return;
 	}
-		
+	
 	InterlockedAdd(counter[0], 1);
 	vectorField[currentPos] = float4(-dir, 1);
 	appendPoints.Append(currentPos);
@@ -83,9 +89,9 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 [numthreads(8,8,8)]
 void ClearSDF (uint3 id : SV_DispatchThreadID)
 {
-	vectorField[id] = float4(0,0,0,0);
+	float3 dirToPlayer = normalize(playerPos - id);
+	vectorField[id] = float4(dirToPlayer, 0);
 }
-
 
 Texture3D<float> noiseTexBottomLeftBack;
 Texture3D<float> noiseTexBottomMiddleBack;
@@ -126,140 +132,94 @@ void CombineTexturesCube (uint3 id : SV_DispatchThreadID)
 	int z = (id.z / 32) * 3;
 	int index = x + y + z;
 	uint3 localPos = uint3(id.x % 32, id.y % 32, id.z % 32);
-
-	if(index == 0)
-	{
-		combinedNoiseTex[id] = noiseTexBottomLeftBack[localPos];
-		return;
-	}
-	if(index == 1)
-	{
-		combinedNoiseTex[id] = noiseTexBottomLeftBack[localPos];
-		return;
-	}
-	if(index == 2)
-	{
-		combinedNoiseTex[id] = noiseTexBottomRightBack[localPos];
-		return;
-	}
-	if(index == 3)
-	{
-		combinedNoiseTex[id] = noiseTexBottomLeftMiddle[localPos];
-		return;
-	}
-	if(index == 4)
-	{
-		combinedNoiseTex[id] = noiseTexBottomMiddleMiddle[localPos];
-		return;
-	}
-	if(index == 5)
-	{
-		combinedNoiseTex[id] = noiseTexBottomRightMiddle[localPos];
-		return;
-	}
-	if(index == 6)
-	{
-		combinedNoiseTex[id] = noiseTexBottomLeftForward[localPos];
-		return;
-	}
-	if(index == 7)
-	{
-		combinedNoiseTex[id] = noiseTexBottomMiddleForward[localPos];
-		return;
-	}
-	if(index == 8)
-	{
-		combinedNoiseTex[id] = noiseTexBottomRightForward[localPos];
-		return;
-	}
 	
-	if(index == 9)
+	if(index == 0)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleLeftBack[localPos];
 		return;
 	}
-	if(index == 10)
+	if(index == 1)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleMiddleBack[localPos];
 		return;
 	}
-	if(index == 11)
+	if(index == 2)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleRightBack[localPos];
 		return;
 	}
-	if(index == 12)
+	if(index == 3)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleLeftMiddle[localPos];
 		return;
 	}
-	if(index == 13)
+	if(index == 4)
 	{
 		combinedNoiseTex[id] = noiseTex[localPos];
 		return;
 	}
-	if(index == 14)
+	if(index == 5)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleRightMiddle[localPos];
 		return;
 	}
-	if(index == 15)
+	if(index == 6)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleLeftForward[localPos];
 		return;
 	}
-	if(index == 16)
+	if(index == 7)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleMiddleForward[localPos];
 		return;
 	}
-	if(index == 17)
+	if(index == 8)
 	{
 		combinedNoiseTex[id] = noiseTexMiddleRightForward[localPos];
 		return;
 	}
 	
-	if(index == 18)
+	if(index == 9)
 	{
 		combinedNoiseTex[id] = noiseTexTopLeftBack[localPos];
 		return;
 	}
-	if(index == 19)
+	if(index == 10)
 	{
 		combinedNoiseTex[id] = noiseTexTopMiddleBack[localPos];
 		return;
 	}
-	if(index == 20)
+	if(index == 11)
 	{
 		combinedNoiseTex[id] = noiseTexTopRightBack[localPos];
 		return;
 	}
-	if(index == 21)
+	if(index == 12)
 	{
 		combinedNoiseTex[id] = noiseTexTopLeftMiddle[localPos];
 		return;
 	}
-	if(index == 22)
+	if(index == 13)
 	{
 		combinedNoiseTex[id] = noiseTexTopMiddleMiddle[localPos];
 		return;
 	}
-	if(index == 23)
+	if(index == 14)
 	{
 		combinedNoiseTex[id] = noiseTexTopRightMiddle[localPos];
 		return;
 	}
-	if(index == 24)
+	if(index == 15)
 	{
 		combinedNoiseTex[id] = noiseTexTopLeftForward[localPos];
 		return;
 	}
-	if(index == 25)
+	if(index == 16)
 	{
 		combinedNoiseTex[id] = noiseTexTopMiddleForward[localPos];
 		return;
 	}
-	if(index == 26)
+	if(index == 17)
 	{
 		combinedNoiseTex[id] = noiseTexTopRightForward[localPos];
 	}

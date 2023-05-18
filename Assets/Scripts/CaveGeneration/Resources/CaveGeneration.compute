@@ -2,6 +2,7 @@
 #pragma kernel CopyDataToMesh
 #include "Includes/MarchTables.compute"
 
+
 struct Vertex
 {
     float3 position;

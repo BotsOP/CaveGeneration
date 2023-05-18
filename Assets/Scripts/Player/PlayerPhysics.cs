@@ -56,8 +56,6 @@ public class PlayerPhysics : MonoBehaviour
 		desiredVelocity = new Vector3(desiredVelocity.x, 0, desiredVelocity.z);
 
 		desiredJump |= Input.GetButtonDown("Jump");
-		
-		EventSystem<Vector3>.RaiseEvent(EventType.UPDATE_CHUNKS, transform.position);
 	}
 
 	void FixedUpdate () {

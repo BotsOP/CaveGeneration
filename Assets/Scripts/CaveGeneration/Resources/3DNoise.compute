@@ -1,10 +1,12 @@
 ﻿#pragma kernel Generate3DNoise
 #include "Includes/Noise.compute"
 
+
 RWTexture3D<float> noiseTex;
 float noiseScale;
 float3 noiseOffset;
 int topLevel;
+int roof;
 
 [numthreads(8,8,8)]
 void Generate3DNoise (uint3 id : SV_DispatchThreadID)
@@ -17,7 +19,7 @@ void Generate3DNoise (uint3 id : SV_DispatchThreadID)
     float noise2 = snoise_grad(wsPosScaled / noiseScale);
     float noise = max(noise1, noise2);
     float distanceToBottom = saturate(wsPos.y / 10);
-    float distanceToTop = saturate((120 - wsPos.y) / 10);
+    float distanceToTop = saturate((roof - wsPos.y) / 10);
     noise *= distanceToBottom * distanceToTop;
     noiseTex[id] = noise;
 }
