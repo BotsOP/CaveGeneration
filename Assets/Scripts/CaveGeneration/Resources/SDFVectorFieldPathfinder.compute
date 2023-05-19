@@ -1,6 +1,7 @@
 #pragma kernel FloodSDF
 #pragma kernel ClearSDF
 #pragma kernel CombineTexturesCube
+#pragma kernel UpdateCombinedSDF
 
 Texture3D<float> noiseTex;
 
@@ -18,11 +19,6 @@ groupshared int3 cachedStartPos[32][26];
 [numthreads(32,26,1)]
 void FloodSDF (uint3 localId : SV_GroupThreadID)
 {
-	// if(globalID.x >= (uint)amountPoints)
-	// {
-	// 	return;
-	// }
-
 	const int3 dirs[26] =
 	{
 		int3(-1, -1, -1),
@@ -223,5 +219,15 @@ void CombineTexturesCube (uint3 id : SV_DispatchThreadID)
 	{
 		combinedNoiseTex[id] = noiseTexTopRightForward[localPos];
 	}
-	
+}
+
+float3 startPosNoiseTex;
+float3 startPosCombinedTex;
+
+[numthreads(8,8,8)]
+void UpdateCombinedSDF (uint3 id : SV_DispatchThreadID)
+{
+	uint3 noiseTexPos = id + startPosNoiseTex;
+	uint3 combinedTexPos = id + startPosCombinedTex;
+	combinedNoiseTex[combinedTexPos] = noiseTex[noiseTexPos];
 }

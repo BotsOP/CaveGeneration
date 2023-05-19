@@ -5,15 +5,26 @@ RWTexture3D<float> noiseTex;
 float carveSize;
 float carveSpeed;
 float3 carvePos;
+float3 startPos;
+float3 chunkPos;
+int roof;
 
 //these functions do not yet work with other isolevels
 [numthreads(8,8,8)]
 void RemoveTerrain (uint3 id : SV_DispatchThreadID)
 {
-	float dist = distance(float3(id), carvePos);
+	uint3 worldPos = id + chunkPos;
+	if(worldPos.y <= (uint)2 || worldPos.y >= (uint)(35))
+	{
+		return;
+	}
+	
+	uint3 currentPos = id + startPos;
+	float dist = distance(currentPos, carvePos);
 	if(dist < carveSize)
 	{
-		noiseTex[id] = noiseTex[id] + carveSpeed;
+		noiseTex[currentPos] = noiseTex[currentPos] + carveSpeed;
+		//noiseTex[currentPos] = 1;
 	}
 }
 

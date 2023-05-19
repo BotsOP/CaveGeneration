@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &105184455
 Transform:
   m_ObjectHideFlags: 0
@@ -177,7 +177,7 @@ MonoBehaviour:
   boidsCount: 10000
   spawnRadius: 20
   target: {fileID: 2112534325}
-  seperationForce: 2
+  seperationForce: 0.2
   alignmentForce: 1
   cohesionForce: 0
   pathFindForce: 1
