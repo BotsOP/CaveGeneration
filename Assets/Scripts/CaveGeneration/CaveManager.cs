@@ -29,6 +29,10 @@ public class CaveManager : MonoBehaviour
         
         caveWidth = amountChunksHorizontal * stepSize;
 
+        BoxCollider boxCollider = meshContainer.GetComponent<BoxCollider>();
+        boxCollider.center = new Vector3(stepSize / 2f, stepSize / 2f, stepSize / 2f);
+        boxCollider.size = new Vector3(stepSize, stepSize, stepSize);
+
         caveBounds = new Vector3[2];
         caveBounds[0] = new Vector3(0, 0, 0);
         caveBounds[1] = new Vector3(caveWidth, amountChunksVertical * stepSize, caveWidth);
@@ -59,9 +63,7 @@ public class CaveManager : MonoBehaviour
             chunks[i, j, k].OnDestroy();
         }
     }
-
     
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.B))
@@ -78,53 +80,47 @@ public class CaveManager : MonoBehaviour
         }
         
         PlaceChunksAroundPlayer(player.position);
-
-        // if (Input.GetKeyDown(KeyCode.C))
-        // {
-        //     AddChunksLeft();
-        // }
-        // if (Input.GetKeyDown(KeyCode.V))
-        // {
-        //     AddChunksRight();
-        // }
-        // if (Input.GetKeyDown(KeyCode.X))
-        // {
-        //     AddChunksForward();
-        // }
-        // if (Input.GetKeyDown(KeyCode.Z))
-        // {
-        //     AddChunksBackward();
-        // }
     }
+    private Vector3Int cachedPlayerChunkIndex;
     private void PlaceChunksAroundPlayer(Vector3 _playerPos)
     {
-        Vector3 playerChunkIndex = _playerPos.Remap(caveBounds[0], caveBounds[1], Vector3.zero, 
-            new Vector3(amountChunksHorizontal, amountChunksVertical, amountChunksHorizontal));
-        
-        if (Mathf.Abs(playerChunkIndex.x - amountChunksHorizontal / 2f) > 1)
+        Vector3 playerChunkIndexTemp = GetChunkIndex(_playerPos);
+
+        Vector3Int playerChunkIndex = new Vector3Int(Mathf.FloorToInt(playerChunkIndexTemp.x), Mathf.FloorToInt(playerChunkIndexTemp.y), Mathf.FloorToInt(playerChunkIndexTemp.z));
+
+        bool shiftedChunks = false;
+        if (playerChunkIndex.x > amountChunksHorizontal / 2)
         {
-            if (playerChunkIndex.x < amountChunksHorizontal / 2f)
-            {
-                AddChunksLeft();
-                Debug.Log($"shifted chunks left");
-                return;
-            }
-            Debug.Log($"shifted chunks right");
+            Debug.Log($"shifted chunks left");
             AddChunksRight();
+            shiftedChunks = true;
         }
-        if (Mathf.Abs(playerChunkIndex.z - amountChunksHorizontal / 2f) > 1)
+        else if(playerChunkIndex.x < amountChunksHorizontal / 2)
         {
-            if (playerChunkIndex.z < amountChunksHorizontal / 2f)
-            {
-                AddChunksBackward();
-                Debug.Log($"shifted chunks backward");
-                return;
-            }
-            Debug.Log($"shifted chunks forward");
+            Debug.Log($"shifted chunks right");
+            AddChunksLeft();
+            shiftedChunks = true;
+        }
+        
+        if (playerChunkIndex.z > amountChunksHorizontal / 2)
+        {
+            Debug.Log($"shifted chunks left");
             AddChunksForward();
+            shiftedChunks = true;
+        }
+        else if(playerChunkIndex.z < amountChunksHorizontal / 2)
+        {
+            Debug.Log($"shifted chunks right");
+            AddChunksBackward();
+            shiftedChunks = true;
+        }
+
+        if (shiftedChunks && Time.timeSinceLevelLoad > 1)
+        {
+            EventSystem.RaiseEvent(EventType.GENERATE_VECTORFIELD);
         }
     }
-    
+
     private Vector3 GetChunkIndex(Vector3 _pos)
     {
         return _pos.Remap(

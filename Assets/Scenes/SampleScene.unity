@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_Fog: 0
-  m_FogColor: {r: 0.07801711, g: 0.079985276, b: 0.084905684, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.05882353, g: 0.16078432, b: 0.15686275, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.05
+  m_FogDensity: 0.03
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &105184455
 Transform:
   m_ObjectHideFlags: 0
@@ -148,7 +148,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 105184454}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 21.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -168,20 +168,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   caveVectorField: {fileID: 1375923500}
-  rotationSpeed: 5
+  rotationSpeed: 4
   boidSpeed: 2
-  neighbourDistance: 1
-  boidSpeedVariation: 0.8
+  seperationForce: 1
+  alignmentForce: 1
+  pathFindForce: 1
   boidMesh: {fileID: -5495902117074765545, guid: 37bb202dde5cccc48a0b2e6e648d7c44, type: 3}
   boidMaterial: {fileID: 2100000, guid: 411df3ae2fdf23442a372a354a6c7afd, type: 2}
+  target: {fileID: 2112534325}
+  neighbourDistance: 1
   boidsCount: 10000
   spawnRadius: 20
-  target: {fileID: 2112534325}
-  seperationForce: 0.2
-  alignmentForce: 1
-  cohesionForce: 0
-  pathFindForce: 1
-  floatPrecession: 1000
+  floatPrecession: 10000
   switchBoids: 0
 --- !u!1001 &296138508
 PrefabInstance:
@@ -1056,7 +1054,7 @@ MonoBehaviour:
   meshContainer: {fileID: 4393015725623752461, guid: 2aff5e84960ff994b919dba02b00e772, type: 3}
   caveDecoration: {fileID: 4925391354412224432, guid: e8bf6199ea805f040a1dd658b1e8b428, type: 3}
   player: {fileID: 2112534325}
-  chunkSize: 32
+  chunkSize: 16
   isoLevel: 0.5
   noiseScale: 0.5
   amountChunksHorizontal: 8
@@ -1236,7 +1234,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BackGroundColor: {r: 0.05882353, g: 0.16078432, b: 0.15686275, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

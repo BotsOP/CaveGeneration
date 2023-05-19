@@ -146,6 +146,7 @@ public class CaveVectorField : MonoBehaviour
         };
 
         EventSystem<List<ChangedChunk>>.Subscribe(EventType.UPDATE_VECTORFIELD, UpdateCombinedNoiseTex);
+        EventSystem.Subscribe(EventType.GENERATE_VECTORFIELD, GenerateNewNoiseTex);
     }
 
     private void OnDisable()
@@ -160,8 +161,25 @@ public class CaveVectorField : MonoBehaviour
         directionBuffer = null;
         
         EventSystem<List<ChangedChunk>>.Unsubscribe(EventType.UPDATE_VECTORFIELD, UpdateCombinedNoiseTex);
+        EventSystem.Unsubscribe(EventType.GENERATE_VECTORFIELD, GenerateNewNoiseTex);
     }
 
+    public Vector3 GetDirection(Vector3 _worldPos)
+    {
+        _worldPos -= bottomLeftCorner;
+        
+        vectorFieldFollowShader.SetTexture(0, "vectorField", vectorField);
+        vectorFieldFollowShader.SetBuffer(0, "dir", directionBuffer);
+        vectorFieldFollowShader.SetVector("pos", _worldPos);
+        
+        vectorFieldFollowShader.Dispatch(0, 1, 1, 1);
+
+        Vector3[] dirArray = new Vector3[1];
+        directionBuffer.GetData(dirArray);
+        Debug.Log($"{dirArray[0]}  pos: {_worldPos}");
+        return dirArray[0];
+    }
+    
     private void Update()
     {
         if (Time.timeSinceLevelLoad > 3)
@@ -186,22 +204,6 @@ public class CaveVectorField : MonoBehaviour
         return diffX + diffY + diffZ;
     }
 
-    public Vector3 GetDirection(Vector3 _worldPos)
-    {
-        _worldPos -= bottomLeftCorner;
-        
-        vectorFieldFollowShader.SetTexture(0, "vectorField", vectorField);
-        vectorFieldFollowShader.SetBuffer(0, "dir", directionBuffer);
-        vectorFieldFollowShader.SetVector("pos", _worldPos);
-        
-        vectorFieldFollowShader.Dispatch(0, 1, 1, 1);
-
-        Vector3[] dirArray = new Vector3[1];
-        directionBuffer.GetData(dirArray);
-        Debug.Log($"{dirArray[0]}  pos: {_worldPos}");
-        return dirArray[0];
-    }
-
     private void GenerateVectorField()
     {
         ClearVectorField();
@@ -216,6 +218,7 @@ public class CaveVectorField : MonoBehaviour
         int baseAmount = -Mathf.FloorToInt(3 / 2.0f);
         int UpperAmount = Mathf.FloorToInt(3 / 2.0f);
         Vector3Int[] consumePointsArray = new Vector3Int[amountDimensions * amountDimensions * amountDimensions];
+        
         for (int x = baseAmount; x <= UpperAmount; x++)
         for (int y = baseAmount; y <= UpperAmount; y++)
         for (int z = baseAmount; z <= UpperAmount; z++)
@@ -223,15 +226,10 @@ public class CaveVectorField : MonoBehaviour
             int index = x - baseAmount + ((y - baseAmount) * 9) + (z - baseAmount) * 3;
             consumePointsArray[index] = startPos + new Vector3Int(x, y, z);
         }
+        
         consumePoints.SetData(consumePointsArray);
 
-        if (chunkIndex != cachedChunkIndex)
-        {
-            cachedChunkIndex = chunkIndex;
-            GenerateNewNoiseTex(chunkIndex);
-        }
-
-        consumePoints.SetCounterValue(1);
+        consumePoints.SetCounterValue((uint)consumePointsArray.Length);
         appendPoints.SetCounterValue(0);
 
         int amountPointsToCheck = 1;
@@ -289,70 +287,73 @@ public class CaveVectorField : MonoBehaviour
         vectorFieldShader.Dispatch(clearKernel, threadSizeClear, threadSizeClearY, threadSizeClear);
     }
 
-    private void GenerateNewNoiseTex(Vector3Int _chunkIndex)
+    private void GenerateNewNoiseTex()
     {
+        Debug.Log($"generated new combined tex");
         combinedTextures.Clear();
 
+        Vector3 playerPos = player.position;
+        Vector3Int chunkIndex = GetChunkIndex(playerPos);
         CaveChunk chunk;
         
-        chunk = chunks[_chunkIndex.x - 1, 0, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x - 1, 0, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleLeftBack", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 0, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x, 0, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleMiddleBack", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 0, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x + 1, 0, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleRightBack", chunk.noiseTex);
             
-        chunk = chunks[_chunkIndex.x - 1, 0, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x - 1, 0, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleLeftMiddle", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 0, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x, 0, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTex", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 0, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x + 1, 0, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleRightMiddle", chunk.noiseTex);
             
-        chunk = chunks[_chunkIndex.x - 1, 0, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x - 1, 0, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleLeftForward", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 0, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x, 0, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleMiddleForward", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 0, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x + 1, 0, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexMiddleRightForward", chunk.noiseTex);
         
         
-        chunk = chunks[_chunkIndex.x - 1, 1, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x - 1, 1, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopLeftBack", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 1, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x, 1, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopMiddleBack", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 1, _chunkIndex.z - 1];
+        chunk = chunks[chunkIndex.x + 1, 1, chunkIndex.z - 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopRightBack", chunk.noiseTex);
             
-        chunk = chunks[_chunkIndex.x - 1, 1, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x - 1, 1, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopLeftMiddle", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 1, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x, 1, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopMiddleMiddle", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 1, _chunkIndex.z];
+        chunk = chunks[chunkIndex.x + 1, 1, chunkIndex.z];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopRightMiddle", chunk.noiseTex);
             
-        chunk = chunks[_chunkIndex.x - 1, 1, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x - 1, 1, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopLeftForward", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x, 1, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x, 1, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopMiddleForward", chunk.noiseTex);
-        chunk = chunks[_chunkIndex.x + 1, 1, _chunkIndex.z + 1];
+        chunk = chunks[chunkIndex.x + 1, 1, chunkIndex.z + 1];
         combinedTextures.Add(chunk.noiseTex);
         vectorFieldShader.SetTexture(combineKernel, "noiseTexTopRightForward", chunk.noiseTex);
 
@@ -363,7 +364,7 @@ public class CaveVectorField : MonoBehaviour
     }
     
     private void UpdateCombinedNoiseTex(List<ChangedChunk> _changedChunks)
-    {
+    { 
         int amountTexturesUpdated = 0;
         foreach (var changedChunk in _changedChunks)
         {
@@ -372,12 +373,18 @@ public class CaveVectorField : MonoBehaviour
             {
                 continue;
             }
+            //We dont want the bottom 9 squares
+            index += 9;
+
+            //We offset directions so that bottomleft is 0, 0, 0
+            Vector3 startPosCombinedTex = chunkPositions[index] + new Vector3Int(1, 0, 1);
+            startPosCombinedTex *= chunkSize;
 
             amountTexturesUpdated++;
             vectorFieldShader.SetTexture(updateKernel, "noiseTex", changedChunk.renderTexture);
             vectorFieldShader.SetTexture(updateKernel, "combinedNoiseTex", combinedNoiseTex);
             vectorFieldShader.SetVector("startPosNoiseTex", changedChunk.startPos);
-            vectorFieldShader.SetVector("startPosCombinedTex", changedChunk.startPos + chunkPositions[index]);
+            vectorFieldShader.SetVector("startPosCombinedTex", changedChunk.startPos + startPosCombinedTex);
             vectorFieldShader.Dispatch(updateKernel, changedChunk.dimensions.x, changedChunk.dimensions.y, changedChunk.dimensions.z);
         }
         if (amountTexturesUpdated > 0)

@@ -58,17 +58,17 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 	
 	GroupMemoryBarrierWithGroupSync();
 
-	if(vectorField[cachedStartPos[localId.x][0]].w < isoLevel)
-	{
-		//return;
-	}
+	// if(vectorField[cachedStartPos[localId.x][0]].w > 0)
+	// {
+	// 	return;
+	// }
 	
 	int3 dir = dirs[localId.y];
 
 	int3 currentPos = cachedStartPos[localId.x][0] + dir;
 
 	if(
-	noiseTex[currentPos] < isoLevel ||
+	noiseTex[currentPos] < isoLevel + 0.1 ||
 	//noiseTex[currentPos] >= 1 ||
 	vectorField[currentPos].w > 0.5 ||
 	currentPos.x == -1 || currentPos.y == -1 || currentPos.z == -1 ||

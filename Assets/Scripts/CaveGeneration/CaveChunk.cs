@@ -122,7 +122,7 @@ public class CaveChunk
         noiseGenerationShader.SetTexture(0, "noiseTex", noiseTex);
         noiseGenerationShader.SetFloat("noiseScale", chunkSize * _noiseScale);
         noiseGenerationShader.SetVector("noiseOffset", position);
-        noiseGenerationShader.SetInt("roof", chunkSize * amountChunksVertial - 10);
+        noiseGenerationShader.SetInt("roof", chunkSize * amountChunksVertial);
         noiseGenerationShader.Dispatch(0, (int)threadGroupSize.x, (int)threadGroupSize.y, (int)threadGroupSize.z);
     }
 

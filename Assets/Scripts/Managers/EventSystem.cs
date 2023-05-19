@@ -7,6 +7,7 @@ namespace Managers
         CARVE_TERRAIN,
         FILL_TERRAIN,
         UPDATE_VECTORFIELD,
+        GENERATE_VECTORFIELD,
     }
 
 

@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="">
+    <list default="true" id="3b950575-0ebb-40b1-b163-92127e3e1ccf" name="Changes" comment="Optimized updating the combined noiseTex after carving">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFVectorFieldPathfinder.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFVectorFieldPathfinder.compute" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/EventSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/EventSystem.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +25,7 @@
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" root0="FORCE_HIGHLIGHTING" />
@@ -130,7 +132,7 @@
       <workItem from="1684232930121" duration="22570000" />
       <workItem from="1684314822987" duration="18373000" />
       <workItem from="1684438337920" duration="9783000" />
-      <workItem from="1684503243218" duration="6609000" />
+      <workItem from="1684503243218" duration="16596000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1682342040590</created>
@@ -209,7 +211,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684451068070</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Optimized updating the combined noiseTex after carving">
+      <created>1684510093072</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1684510093072</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -242,9 +251,40 @@
     <MESSAGE value="Made the vectorfield a 3x3x3 chunk area" />
     <MESSAGE value="fixed small bug" />
     <MESSAGE value="finally got the boid pathfinding kinda working" />
-    <option name="LAST_COMMIT_MESSAGE" value="finally got the boid pathfinding kinda working" />
+    <MESSAGE value="Optimized updating the combined noiseTex after carving" />
+    <option name="LAST_COMMIT_MESSAGE" value="Optimized updating the combined noiseTex after carving" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs</url>
+          <line>87</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CaveManager.cs" initialLine="89" containingFunctionPresentation="method 'PlaceChunksAroundPlayer'">
+            <startOffsets>
+              <option value="3221" />
+            </startOffsets>
+            <endOffsets>
+              <option value="3273" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs</url>
+          <line>229</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CaveVectorField.cs" initialLine="229" containingFunctionPresentation="method 'GenerateVectorField'">
+            <startOffsets>
+              <option value="8641" />
+            </startOffsets>
+            <endOffsets>
+              <option value="8674" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="Type#Location" memberName="G" />

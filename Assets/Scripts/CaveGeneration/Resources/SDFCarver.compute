@@ -13,11 +13,11 @@ int roof;
 [numthreads(8,8,8)]
 void RemoveTerrain (uint3 id : SV_DispatchThreadID)
 {
-	uint3 worldPos = id + chunkPos;
-	if(worldPos.y <= (uint)2 || worldPos.y >= (uint)(35))
-	{
-		return;
-	}
+	// uint3 worldPos = id + chunkPos;
+	// if(worldPos.y <= (uint)2 || worldPos.y >= (uint)(35))
+	// {
+	// 	return;
+	// }
 	
 	uint3 currentPos = id + startPos;
 	float dist = distance(currentPos, carvePos);

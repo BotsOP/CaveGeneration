@@ -5,19 +5,22 @@ using UnityEngine;
 public class BoidsManager : MonoBehaviour
 {
     public CaveVectorField caveVectorField;
-    public float rotationSpeed = 1f;
-    public float boidSpeed = 1f;
-    public float neighbourDistance = 1f;
-    public float boidSpeedVariation = 1f;
+    [Header("Velocity")]
+    [Range(0, 10)] public float rotationSpeed = 1f;
+    [Range(0, 10)] public float boidSpeed = 1f;
+    [Header("Forces")]
+    [Range(0, 3)] public float seperationForce;
+    [Range(0, 3)]public float alignmentForce;
+    // public float cohesionForce;
+    [Range(0, 3)]public float pathFindForce;
+    [Header("Boid Visual")]
     public Mesh boidMesh;
     public Material boidMaterial;
+    public Transform target;
+    [Header("Dev settings")]
+    [Range(0, 3)] public float neighbourDistance = 1f;
     public int boidsCount;
     public float spawnRadius;
-    public Transform target;
-    public float seperationForce;
-    public float alignmentForce;
-    public float cohesionForce;
-    public float pathFindForce;
     public int floatPrecession;
 
     private ComputeShader shader;
@@ -90,7 +93,7 @@ public class BoidsManager : MonoBehaviour
         shader.SetInt("floatPrecession", floatPrecession);
         shader.SetFloat("rotationSpeed", rotationSpeed);
         shader.SetFloat("boidSpeed", boidSpeed);
-        shader.SetFloat("boidSpeedVariation", boidSpeedVariation);
+        //shader.SetFloat("boidSpeedVariation", boidSpeedVariation);
         shader.SetVector("flockPosition", target.transform.position);
         shader.SetFloat("neighbourDistance", neighbourDistance);
         shader.SetInt("boidsCount", numOfBoids);
@@ -114,7 +117,7 @@ public class BoidsManager : MonoBehaviour
             shader.SetFloat("deltaTime", Time.deltaTime);
             shader.SetFloat("seperationForce", seperationForce);
             shader.SetFloat("alignmentForce", alignmentForce);
-            shader.SetFloat("cohesionForce", cohesionForce);
+            //shader.SetFloat("cohesionForce", cohesionForce);
             shader.SetFloat("pathFindForce", pathFindForce);
             shader.SetFloat("rotationSpeed", rotationSpeed);
             shader.SetFloat("boidSpeed", boidSpeed);

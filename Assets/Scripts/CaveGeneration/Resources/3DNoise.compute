@@ -12,7 +12,7 @@ int roof;
 void Generate3DNoise (uint3 id : SV_DispatchThreadID)
 {
     float3 wsPos = (float3)id + noiseOffset;
-    float noise1 = snoise_grad(wsPos / noiseScale * 0.5);
+    float noise1 = snoise_grad(wsPos / noiseScale * 0.4);
 
     float3 wsPosScaled = wsPos;
     wsPosScaled.y *= 2;

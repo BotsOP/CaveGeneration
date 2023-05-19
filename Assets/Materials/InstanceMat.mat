@@ -59,5 +59,6 @@ Material:
     - WindShiftStrength: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Transparency: 1
     m_Colors: []
   m_BuildTextureStacks: []
