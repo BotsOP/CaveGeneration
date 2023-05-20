@@ -23,8 +23,8 @@ public class CaveVectorField : MonoBehaviour
     private CaveManager caveManager;
     private ComputeShader vectorFieldShader;
     private ComputeShader vectorFieldFollowShader;
-    private Transform player => caveManager.player;
-    private int chunkSize => caveManager.chunkSize;
+    public Transform player => caveManager.player;
+    public int chunkSize => caveManager.chunkSize;
     private CaveChunk[,,] chunks => caveManager.chunks;
     private Vector3[] caveBounds => caveManager.caveBounds;
     private int amountChunksHorizontal => caveManager.amountChunksHorizontal;

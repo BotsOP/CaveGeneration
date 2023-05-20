@@ -9,7 +9,7 @@ public class CaveManager : MonoBehaviour
     [SerializeField] private GameObject meshContainer;
     [SerializeField] private GameObject caveDecoration;
     public Transform player;
-    [Range(8, 128)] public int chunkSize = 32;
+    [Range(1, 128)] public int chunkSize = 32;
     [Range(0.01f, 1)] public float isoLevel;
     [Range(0.01f, 1)] public float noiseScale;
     [Range(1, 32)] public int amountChunksHorizontal;

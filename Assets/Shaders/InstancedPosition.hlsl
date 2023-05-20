@@ -1,17 +1,10 @@
 #ifndef SHADER_GRAPH_SUPPORT_H
 #define SHADER_GRAPH_SUPPORT_H
 
-// You could also upload the model matrix
-struct DrawData {
-    float3 position;
-    float4 rotation;
-    float3 scale;
-};
-StructuredBuffer<DrawData> _DrawData;
-
 struct Boid {
     float3 position;
     float3 direction;
+    float health;
 };
 StructuredBuffer<Boid> boidsBuffer;
 
@@ -57,6 +50,16 @@ inline void SetUnityMatrices(uint instanceID, inout float4x4 objectToWorld, inou
 void passthroughVec3_float(in float3 In, out float3 Out)
 {
     Out = In;
+}
+
+void GetHealth_half(in float instanceID, out float Out)
+{
+    Out = boidsBuffer[instanceID].health;
+}
+
+void GetHealth_float(in float instanceID, out float Out)
+{
+    Out = boidsBuffer[instanceID].health;
 }
 
 void setup()

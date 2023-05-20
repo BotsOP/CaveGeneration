@@ -7,7 +7,7 @@ public class PlayerPhysics : MonoBehaviour
 	[SerializeField] private Transform camTransform;
 	[SerializeField, Range(0f, 100f)]
 	float maxSpeed = 10f;
-	[SerializeField, Range(0f, 100f)]
+	[SerializeField, Range(0f, 1000f)]
 	float maxAcceleration = 10f, maxAirAcceleration = 1f;
 	[SerializeField, Range(0f, 10f)] private float jumpHeight = 2f;
 	[SerializeField] private float collisionSolverMultiplier = 1;
@@ -59,37 +59,11 @@ public class PlayerPhysics : MonoBehaviour
 	}
 
 	void FixedUpdate () {
-		if (nextFrameReset)
-		{
-			nextFrameReset = false;
-			velocity = Vector3.zero;
-		}
-		
+
 		UpdateState();
 		AdjustVelocity();
 		
-		if (CavePhysicsManager.instance.Sphere(transform.position, transform.lossyScale.x / 2,
-		                                       out RayOutput closestPoint))
-		{
-			Vector3 pos = closestPoint.position;
-			Vector3 normal = closestPoint.normal;
-			
-			float magnitude = transform.lossyScale.x / 2 - Vector3.Distance(transform.position, pos);
-			Vector3 dir = (transform.position - pos).normalized;
-			transform.Translate(dir * (magnitude * collisionSolverMultiplier));
-			velocity += dir * magnitude;
-			
-			if (normal.y >= minGroundDotProduct) {
-				groundContactCount += 1;
-				contactNormal += normal;
-			}
-			else if (normal.y > -0.01f) {
-				steepContactCount += 1;
-				steepNormal += normal;
-			}
-			
-			nextFrameReset = true;
-		}
+		SolveCollisions();
 
 		if (desiredJump) 
 		{
@@ -99,6 +73,33 @@ public class PlayerPhysics : MonoBehaviour
 
 		body.velocity = velocity;
 		ClearState();
+	}
+	private void SolveCollisions()
+	{
+		int counter = 0;
+		while (CavePhysicsManager.instance.Sphere(transform.position, transform.lossyScale.x / 2, out RayOutput closestPoint) && counter < 10)
+		{
+			Vector3 pos = closestPoint.position;
+			Vector3 normal = closestPoint.normal;
+
+			float magnitude = transform.lossyScale.x / 2 - Vector3.Distance(transform.position, pos);
+			Vector3 dir = (transform.position - pos).normalized;
+			transform.Translate(dir * (magnitude * collisionSolverMultiplier));
+			velocity += dir * magnitude;
+
+			if (normal.y >= minGroundDotProduct)
+			{
+				groundContactCount += 1;
+				contactNormal += normal;
+			}
+			else if (normal.y > -0.01f)
+			{
+				steepContactCount += 1;
+				steepNormal += normal;
+			}
+
+			counter++;
+		}
 	}
 
 	void ClearState () {

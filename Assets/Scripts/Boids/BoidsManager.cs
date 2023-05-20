@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class BoidsManager : MonoBehaviour
 {
-    public CaveVectorField caveVectorField;
-    [Header("Velocity")]
+    [Header("Settings")]
     [Range(0, 10)] public float rotationSpeed = 1f;
     [Range(0, 10)] public float boidSpeed = 1f;
+    [Range(0, 2)] public float boidRadius = 1f;
+    [Range(0, 1)] public float gunDamage = 0.1f;
     [Header("Forces")]
     [Range(0, 3)] public float seperationForce;
     [Range(0, 3)]public float alignmentForce;
@@ -16,8 +17,9 @@ public class BoidsManager : MonoBehaviour
     [Header("Boid Visual")]
     public Mesh boidMesh;
     public Material boidMaterial;
-    public Transform target;
     [Header("Dev settings")]
+    public Transform camTransform;
+    public CaveVectorField caveVectorField;
     [Range(0, 3)] public float neighbourDistance = 1f;
     public int boidsCount;
     public float spawnRadius;
@@ -27,8 +29,9 @@ public class BoidsManager : MonoBehaviour
     ComputeBuffer boidsBuffer;
     ComputeBuffer boidsVelBuffer;
     ComputeBuffer argsBuffer;
-    int moveKernel;
     int prepKernel;
+    int moveKernel;
+    int moveAndRaycastKernel;
     uint[] args = { 0, 0, 0, 0, 0 };
     Boid[] boidsArray;
     int groupSizeXPrepBoids;
@@ -41,6 +44,7 @@ public class BoidsManager : MonoBehaviour
         shader = Resources.Load<ComputeShader>("Boids");
         prepKernel = shader.FindKernel("PrepBoids");
         moveKernel = shader.FindKernel("MoveBoids");
+        moveAndRaycastKernel = shader.FindKernel("MoveBoidsAndRaycast");
 
         uint x;
         shader.GetKernelThreadGroupSizes(prepKernel, out x, out _, out _);
@@ -64,13 +68,13 @@ public class BoidsManager : MonoBehaviour
         {
             Vector3 pos = transform.position + Random.insideUnitSphere * spawnRadius;
             Quaternion rot = Quaternion.Slerp(transform.rotation, Random.rotation, 0.3f);
-            boidsArray[i] = new Boid(pos, rot.eulerAngles);
+            boidsArray[i] = new Boid(pos, rot.eulerAngles, 1);
         }
     }
 
     void InitShader()
     {
-        boidsBuffer = new ComputeBuffer(numOfBoids, 6 * sizeof(float));
+        boidsBuffer = new ComputeBuffer(numOfBoids, 7 * sizeof(float));
         boidsBuffer.SetData(boidsArray);
 
         //boidsVelBuffer = new ComputeBuffer(numOfBoids, sizeof(int) * 10, ComputeBufferType.Structured);
@@ -87,14 +91,16 @@ public class BoidsManager : MonoBehaviour
 
         shader.SetBuffer(moveKernel, "boidsBuffer", boidsBuffer);
         shader.SetBuffer(prepKernel, "boidsBuffer", boidsBuffer);
+        shader.SetBuffer(moveAndRaycastKernel, "boidsBuffer", boidsBuffer);
         shader.SetBuffer(moveKernel, "boidsVelBuffer", boidsVelBuffer);
         shader.SetBuffer(prepKernel, "boidsVelBuffer", boidsVelBuffer);
+        shader.SetBuffer(moveAndRaycastKernel, "boidsVelBuffer", boidsVelBuffer);
         shader.SetTexture(moveKernel, "vectorField", caveVectorField.vectorField);
+        shader.SetTexture(moveAndRaycastKernel, "vectorField", caveVectorField.vectorField);
         shader.SetInt("floatPrecession", floatPrecession);
         shader.SetFloat("rotationSpeed", rotationSpeed);
         shader.SetFloat("boidSpeed", boidSpeed);
         //shader.SetFloat("boidSpeedVariation", boidSpeedVariation);
-        shader.SetVector("flockPosition", target.transform.position);
         shader.SetFloat("neighbourDistance", neighbourDistance);
         shader.SetInt("boidsCount", numOfBoids);
 
@@ -122,10 +128,23 @@ public class BoidsManager : MonoBehaviour
             shader.SetFloat("rotationSpeed", rotationSpeed);
             shader.SetFloat("boidSpeed", boidSpeed);
             shader.SetFloat("neighbourDistance", neighbourDistance);
-            shader.SetVector("flockPosition", target.transform.position);
+            shader.SetVector("playerPos", caveVectorField.player.position);
+            shader.SetFloat("respawnWidth", 10);
+            shader.SetFloat("gunDamage", gunDamage);
+            shader.SetInt("chunkSize", caveVectorField.chunkSize);
             shader.SetVector("bottomLeftVectorFieldCorner", caveVectorField.bottomLeftCorner);
 
-            shader.Dispatch(moveKernel, groupSizeXMoveBoids, 1, 1);
+            if (Input.GetMouseButton(1))
+            {
+                shader.SetVector("rayOrigin", camTransform.position);
+                shader.SetVector("rayDirection", camTransform.forward);
+                shader.SetFloat("boidRadius", boidRadius);
+                shader.Dispatch(moveAndRaycastKernel, groupSizeXMoveBoids, 1, 1);
+            }
+            else
+            {
+                shader.Dispatch(moveKernel, groupSizeXMoveBoids, 1, 1);
+            }
 
             //
             // BoidVel[] boidVelArray2 = new BoidVel[numOfBoids];
@@ -145,8 +164,9 @@ public class BoidsManager : MonoBehaviour
     {
         public Vector3 position;
         public Vector3 direction;
+        public float health;
 
-        public Boid(Vector3 pos, Vector3 dir)
+        public Boid(Vector3 pos, Vector3 dir, float _health)
         {
             position.x = pos.x;
             position.y = pos.y;
@@ -154,6 +174,7 @@ public class BoidsManager : MonoBehaviour
             direction.x = dir.x;
             direction.y = dir.y;
             direction.z = dir.z;
+            health = _health;
         }
     }
 

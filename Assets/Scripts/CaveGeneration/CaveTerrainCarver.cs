@@ -79,9 +79,9 @@ public class CaveTerrainCarver : MonoBehaviour
             float areaHeight = Mathf.Abs(areaHitCorners[0].y - areaHitCorners[1].y);
             float areaDepth = Mathf.Abs(areaHitCorners[0].z - areaHitCorners[1].z);
 
-            int dispatchWidth = Mathf.CeilToInt(areaWidth / threadGroupSize.x);
-            int dispatchHeight = Mathf.CeilToInt(areaHeight / threadGroupSize.y);
-            int dispatchDepth = Mathf.CeilToInt(areaDepth / threadGroupSize.z);
+            int dispatchWidth = Mathf.CeilToInt(areaWidth / threadGroupSize.x) + 1;
+            int dispatchHeight = Mathf.CeilToInt(areaHeight / threadGroupSize.y) + 1;
+            int dispatchDepth = Mathf.CeilToInt(areaDepth / threadGroupSize.z) + 1;
 
             caveCarveShader.SetTexture(0, "noiseTex", chunk.noiseTex);
             caveCarveShader.SetVector("carvePos", carvePos);

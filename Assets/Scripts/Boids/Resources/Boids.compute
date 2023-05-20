@@ -1,45 +1,20 @@
 ﻿#pragma kernel PrepBoids
 #pragma kernel MoveBoids
+#pragma kernel MoveBoidsAndRaycast
 #define GROUP_SIZE 512
 
-float hash(float n)
-{
-	return frac(sin(n)*43758.5453);
-}
 
-float3 hash33(float3 p3)
-{
-	p3 = frac(p3 * float3(.1031, .1030, .0973));
-	p3 += dot(p3, p3.yxz+33.33);
-	float3 rand = frac((p3.xxy + p3.yxx)*p3.zyx);
-	
-}
-
-// The noise function returns a value in the range -1.0f -> 1.0f 
-float noise1(float3 x)
-{
-	float3 p = floor(x);
-	float3 f = frac(x);
-
-	f       = f*f*(3.0-2.0*f);
-	float n = p.x + p.y*57.0 + 113.0*p.z;
-
-	return lerp(lerp(lerp( hash(n+0.0), hash(n+1.0),f.x),
-					lerp( hash(n+57.0), hash(n+58.0),f.x),f.y),
-				lerp(lerp( hash(n+113.0), hash(n+114.0),f.x),
-					lerp( hash(n+170.0), hash(n+171.0),f.x),f.y),f.z);
-}
 
 struct Boid
 {
 	float3 position;
 	float3 direction;
+	float health;
 };
 struct BoidVel
 {
 	int3 alignment;
 	int3 separation;
-	//int3 cohesion;
 	int neighbourCount;
 };
 
@@ -61,7 +36,84 @@ float alignmentForce;
 float cohesionForce;
 float pathFindForce;
 float3 bottomLeftVectorFieldCorner;
+float3 playerPos;
+float respawnWidth;
+int chunkSize;
 
+float3 rayOrigin;
+float3 rayDirection;
+float boidRadius;
+float gunDamage;
+
+float hash13(float3 p3)
+{
+	p3  = frac(p3 * .1031);
+	p3 += dot(p3, p3.zyx + 31.32);
+	return frac((p3.x + p3.y) * p3.z);
+}
+
+
+float3 newRespawnPos(float3 p3)
+{
+	p3 = frac(p3 * float3(.1031, .1030, .0973));
+	p3 += dot(p3, p3.yxz+33.33);
+	float3 rand = frac((p3.xxy + p3.yxx)*p3.zyx);
+	
+	float3 respawnPos;
+	
+	respawnPos.y = rand.y * (chunkSize * 2 - respawnWidth * 2) + respawnWidth;
+
+	if(hash13(p3) < 0.5)
+	{
+		respawnPos.x = rand.x * chunkSize * 3;
+		if(respawnPos.x > respawnWidth && respawnPos.x < chunkSize * 3 - respawnWidth)
+		{
+			float extraZPos = (int)(rand.z * 2) * (chunkSize * 3 - respawnWidth);
+			respawnPos.z = rand.z * respawnWidth + extraZPos;
+			return respawnPos;
+		}
+		respawnPos.z = rand.z * chunkSize * 3;
+		return respawnPos;
+	}
+	
+	respawnPos.z = rand.z * chunkSize * 3;
+	if(respawnPos.z > respawnWidth && respawnPos.z < chunkSize * 3 - respawnWidth)
+	{
+		float extraZPos = (int)(rand.x * 2) * (chunkSize * 3 - respawnWidth);
+		respawnPos.x = rand.x * respawnWidth + extraZPos;
+		return respawnPos;
+	}
+	respawnPos.x = rand.x * chunkSize * 3;
+	return respawnPos;
+}
+
+bool LineSphereIntersection(float3 lineOrigin, float3 lineDirection, float3 spherePosition, float sphereRadius, out float3 closestPoint)
+{
+	float3 lineToSphere = spherePosition - lineOrigin;
+	float tc = dot(lineToSphere, lineDirection);
+    
+	if (tc < 0.0)
+	{
+		closestPoint = float3(0, 0, 0);
+		return false;
+	}
+    
+	float dSquared = dot(lineToSphere, lineToSphere) - tc * tc;
+	float radiusSquared = sphereRadius * sphereRadius;
+    
+	if (dSquared > radiusSquared)
+	{
+		closestPoint = float3(0, 0, 0);
+		return false;
+	}
+    
+	float t1c = sqrt(radiusSquared - dSquared);
+	float t1 = tc - t1c;
+	//float t2 = tc + t1c;
+    
+	closestPoint = lineOrigin + lineDirection * t1;
+	return true;
+}
 
 [numthreads(32,32,1)]
 void PrepBoids (uint3 id : SV_DispatchThreadID)
@@ -74,10 +126,8 @@ void PrepBoids (uint3 id : SV_DispatchThreadID)
 	float dist = distance(boid.position, neighbourBoid.position);
 	if(dist < neighbourDistance)
 	{
-		float3 offset = boid.position - neighbourBoid.position;
-		dist = length(offset);
 		dist = max(dist, 0.000001);//Avoid division by zero
-		float3 separation = -(offset * (1.0 / dist - 1.0 / neighbourDistance));
+		float3 separation = -((boid.position - neighbourBoid.position) * (1.0 / dist - 1.0 / neighbourDistance));
 
 		InterlockedAdd(boidsVelBuffer[id.y].separation.x, separation.x * floatPrecession);
 		InterlockedAdd(boidsVelBuffer[id.y].separation.y, separation.y * floatPrecession);
@@ -86,10 +136,6 @@ void PrepBoids (uint3 id : SV_DispatchThreadID)
 		InterlockedAdd(boidsVelBuffer[id.y].alignment.x, neighbourBoid.direction.x * floatPrecession);
 		InterlockedAdd(boidsVelBuffer[id.y].alignment.y, neighbourBoid.direction.y * floatPrecession);
 		InterlockedAdd(boidsVelBuffer[id.y].alignment.z, neighbourBoid.direction.z * floatPrecession);
-
-		// InterlockedAdd(boidsVelBuffer[id.y].cohesion.x, neighbourBoid.position.x * floatPrecession);
-		// InterlockedAdd(boidsVelBuffer[id.y].cohesion.y, neighbourBoid.position.y * floatPrecession);
-		// InterlockedAdd(boidsVelBuffer[id.y].cohesion.z, neighbourBoid.position.z * floatPrecession);
 
 		InterlockedAdd(boidsVelBuffer[id.y].neighbourCount, 1);
 	}
@@ -101,16 +147,35 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 	uint instanceId = id.x;
 	Boid boid = boidsBuffer[instanceId];
 	BoidVel boidVel = boidsVelBuffer[instanceId];
+	
+	if(distance(boid.position, playerPos) < 3)
+	{
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+
+		boidsVelBuffer[instanceId].separation = int3(0,0,0);
+		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
+		boidsVelBuffer[instanceId].neighbourCount = 0;
+		return;
+	}
+	
+	float3 currentVectorPos = boid.position - bottomLeftVectorFieldCorner;
+	if(currentVectorPos.x < 0 || currentVectorPos.y < 0 || currentVectorPos.z < 0 ||
+		currentVectorPos.x > chunkSize * 3 || currentVectorPos.y > chunkSize * 2 || currentVectorPos.z > chunkSize * 3)
+	{
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+
+		boidsVelBuffer[instanceId].separation = int3(0,0,0);
+		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
+		boidsVelBuffer[instanceId].neighbourCount = 0;
+		return;
+	}
 
 	float velocity = boidSpeed * (1.0 + 1 * boidSpeedVariation);
 
-	//float3 boid_pos = boid.position;
 	float3 boid_dir = boid.direction;
 
 	float3 separation = boidVel.separation / floatPrecession;
 	float3 alignment = boidVel.alignment / floatPrecession;
-	//float3 cohesion = boidVel.cohesion / floatPrecession + flockPosition;
-	float3 currentVectorPos = boid.position - bottomLeftVectorFieldCorner;
 	currentVectorPos = float3(round(currentVectorPos.x), round(currentVectorPos.y), round(currentVectorPos.z));
 	float3 pathfind = vectorField[currentVectorPos].xyz;
 
@@ -118,10 +183,7 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 
 	float avg = 1.0 / nearbyCount;
 	alignment *= avg;
-	//cohesion *= avg;
-	//cohesion = normalize(cohesion - boid_pos);
-
-	//float3 direction = alignment * alignment + cohesion * cohesionForce + separation * seperationForce + pathfind * pathFindForce;
+	
 	float3 direction = alignment * alignment + separation * seperationForce + pathfind * pathFindForce;
 
 	float ip = exp(-rotationSpeed * deltaTime);
@@ -133,7 +195,84 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 
 	boidsVelBuffer[instanceId].separation = int3(0,0,0);
 	boidsVelBuffer[instanceId].alignment = int3(0,0,0);
-	//boidsVelBuffer[instanceId].cohesion = int3(0,0,0);
+	boidsVelBuffer[instanceId].neighbourCount = 0;
+}
+
+[numthreads(GROUP_SIZE,1,1)]
+void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
+{
+	uint instanceId = id.x;
+	Boid boid = boidsBuffer[instanceId];
+	BoidVel boidVel = boidsVelBuffer[instanceId];
+
+	float3 closestPoint;
+	if(LineSphereIntersection(rayOrigin, rayDirection, boid.position, boidRadius, closestPoint))
+	{
+		float3 dirToBoid = normalize(boid.position - playerPos);
+		int boidDot = saturate(ceil(dot(dirToBoid, rayDirection)));
+		boid.health -= gunDamage * boidDot;
+		
+		if(boid.health < 0)
+		{
+			boid.health = 1;
+			boid.position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+
+			boidsBuffer[instanceId] = boid;
+
+			boidsVelBuffer[instanceId].separation = int3(0,0,0);
+			boidsVelBuffer[instanceId].alignment = int3(0,0,0);
+			boidsVelBuffer[instanceId].neighbourCount = 0;
+			return;
+		}
+	}
+	
+	if(distance(boid.position, playerPos) < 3)
+	{
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+
+		boidsVelBuffer[instanceId].separation = int3(0,0,0);
+		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
+		boidsVelBuffer[instanceId].neighbourCount = 0;
+		return;
+	}
+	
+	float3 currentVectorPos = boid.position - bottomLeftVectorFieldCorner;
+	if(currentVectorPos.x < 0 || currentVectorPos.y < 0 || currentVectorPos.z < 0 ||
+		currentVectorPos.x > chunkSize * 3 || currentVectorPos.y > chunkSize * 2 || currentVectorPos.z > chunkSize * 3)
+	{
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+
+		boidsVelBuffer[instanceId].separation = int3(0,0,0);
+		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
+		boidsVelBuffer[instanceId].neighbourCount = 0;
+		return;
+	}
+
+	float velocity = boidSpeed * (1.0 + 1 * boidSpeedVariation);
+
+	float3 boid_dir = boid.direction;
+
+	float3 separation = boidVel.separation / floatPrecession;
+	float3 alignment = boidVel.alignment / floatPrecession;
+	currentVectorPos = float3(round(currentVectorPos.x), round(currentVectorPos.y), round(currentVectorPos.z));
+	float3 pathfind = vectorField[currentVectorPos].xyz;
+
+	int nearbyCount = boidVel.neighbourCount + 1;
+
+	float avg = 1.0 / nearbyCount;
+	alignment *= avg;
+	
+	float3 direction = alignment * alignment + separation * seperationForce + pathfind * pathFindForce;
+
+	float ip = exp(-rotationSpeed * deltaTime);
+	boid.direction = normalize(lerp(direction, boid_dir, ip));
+
+	boid.position += (boid.direction) * (velocity * deltaTime);
+
+	boidsBuffer[instanceId] = boid;
+
+	boidsVelBuffer[instanceId].separation = int3(0,0,0);
+	boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 	boidsVelBuffer[instanceId].neighbourCount = 0;
 }
 
