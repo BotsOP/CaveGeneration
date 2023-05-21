@@ -3,8 +3,6 @@
 #pragma kernel MoveBoidsAndRaycast
 #define GROUP_SIZE 512
 
-
-
 struct Boid
 {
 	float3 position;
@@ -20,6 +18,8 @@ struct BoidVel
 
 RWStructuredBuffer<Boid> boidsBuffer;
 RWStructuredBuffer<BoidVel> boidsVelBuffer;
+RWStructuredBuffer<int> playerHitBuffer;
+RWStructuredBuffer<int> boidsHitBuffer;
 Texture3D<float4> vectorField;
 
 float time;
@@ -44,6 +44,7 @@ float3 rayOrigin;
 float3 rayDirection;
 float boidRadius;
 float gunDamage;
+float gunRange;
 
 float hash13(float3 p3)
 {
@@ -206,22 +207,23 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	BoidVel boidVel = boidsVelBuffer[instanceId];
 
 	float3 closestPoint;
-	if(LineSphereIntersection(rayOrigin, rayDirection, boid.position, boidRadius, closestPoint))
+	if(LineSphereIntersection(rayOrigin, rayDirection, boid.position, boidRadius, closestPoint) && distance(playerPos, boid.position) < gunRange)
 	{
 		float3 dirToBoid = normalize(boid.position - playerPos);
-		int boidDot = saturate(ceil(dot(dirToBoid, rayDirection)));
+		//if the dot product is bigger then 0.5 do dmg
+		int boidDot = saturate(floor(dot(dirToBoid, rayDirection) * 2));
 		boid.health -= gunDamage * boidDot;
 		
-		if(boid.health < 0)
+		if(boid.health <= 0)
 		{
-			boid.health = 1;
-			boid.position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
-
-			boidsBuffer[instanceId] = boid;
+			boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+			boidsBuffer[instanceId].health = 1;
 
 			boidsVelBuffer[instanceId].separation = int3(0,0,0);
 			boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 			boidsVelBuffer[instanceId].neighbourCount = 0;
+
+			InterlockedAdd(playerHitBuffer[0], 1);
 			return;
 		}
 	}
@@ -229,10 +231,13 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	if(distance(boid.position, playerPos) < 3)
 	{
 		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+		boidsBuffer[instanceId].health = 1;
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
 		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
+
+		InterlockedAdd(boidsHitBuffer[0], 1);
 		return;
 	}
 	

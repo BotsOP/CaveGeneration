@@ -20,6 +20,14 @@ public static class ExtensionMethods
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
+
+    public static int GetCounter(this ComputeBuffer _buffer)
+    {
+        int[] intArray = new int[1];
+        _buffer.GetData(intArray);
+        _buffer.SetData(new int[1]);
+        return intArray[0];
+    }
     
     public static void Clear(this CustomRenderTexture _rt, bool _clearDepth, bool _clearColor, Color _color)
     {

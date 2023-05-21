@@ -85,8 +85,8 @@ void FloodSDF (uint3 localId : SV_GroupThreadID)
 [numthreads(8,8,8)]
 void ClearSDF (uint3 id : SV_DispatchThreadID)
 {
-	float3 dirToPlayer = normalize(playerPos - id);
-	vectorField[id] = float4(dirToPlayer, 0);
+	float3 dirAwayPlayer = normalize(id - playerPos);
+	vectorField[id] = float4(dirAwayPlayer, 0);
 }
 
 Texture3D<float> noiseTexBottomLeftBack;

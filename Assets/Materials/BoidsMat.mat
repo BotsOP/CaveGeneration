@@ -57,7 +57,7 @@ Material:
     - Vector1_48114faaf05941bbbc5a9ec163574480: 0
     - Vector1_88e50a723cbf498aa0723c0ec6c29da3: 0
     - WindShiftStrength: 0
-    - _EmissionPower: 2
+    - _EmissionPower: 3
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Transparency: 1
