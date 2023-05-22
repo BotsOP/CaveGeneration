@@ -27,7 +27,7 @@ public class CaveVectorField : MonoBehaviour
     public int chunkSize => caveManager.chunkSize;
     private CaveChunk[,,] chunks => caveManager.chunks;
     private Vector3[] caveBounds => caveManager.caveBounds;
-    private int amountChunksHorizontal => caveManager.amountChunksHorizontal;
+    public int amountChunksHorizontal => caveManager.amountChunksHorizontal;
     private int amountChunksVertical => caveManager.amountChunksVertical;
     private float isoLevel => caveManager.isoLevel;
     private ComputeBuffer directionBuffer;
@@ -179,19 +179,23 @@ public class CaveVectorField : MonoBehaviour
         Debug.Log($"{dirArray[0]}  pos: {_worldPos}");
         return dirArray[0];
     }
-    
+
+    private bool generatedNoiseTex;
     private void Update()
     {
-        if (Time.timeSinceLevelLoad > 3)
-        {
-            Vector3 pos = player.position;
-            Vector3Int playerPos = new Vector3Int(Mathf.RoundToInt(pos.x), Mathf.RoundToInt(pos.y), Mathf.RoundToInt(pos.z));
+        Vector3 pos = player.position;
+        Vector3Int playerPos = new Vector3Int(Mathf.RoundToInt(pos.x), Mathf.RoundToInt(pos.y), Mathf.RoundToInt(pos.z));
 
-            if (ManhattenDistance(playerPos, cachedPos) > 0)
-            {
-                cachedPos = playerPos;
-                GenerateVectorField();
-            }
+        if (!generatedNoiseTex)
+        {
+            GenerateNewNoiseTex();
+            generatedNoiseTex = true;
+        }
+            
+        if (ManhattenDistance(playerPos, cachedPos) > 0)
+        {
+            cachedPos = playerPos;
+            GenerateVectorField();
         }
     }
 
@@ -264,10 +268,10 @@ public class CaveVectorField : MonoBehaviour
             appendPoints.SetCounterValue(0);
             consumePoints.SetCounterValue((uint)amountPointsToCheck);
         
-            if (amountLoops == 0 && amountPointsToCheck == 0)
-            {
-                Debug.LogWarning("Couldtn find any points");
-            }
+            // if (amountLoops == 0 && amountPointsToCheck == 0)
+            // {
+            //     Debug.LogWarning("Couldtn find any points");
+            // }
             
             amountLoops++;
             if (amountLoops >= 10000)

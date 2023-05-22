@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Managers;
 using UnityEngine;
+using EventType = Managers.EventType;
 
 public class BoidsManager : MonoBehaviour
 {
@@ -8,6 +10,7 @@ public class BoidsManager : MonoBehaviour
     [Range(0, 10)] public float rotationSpeed = 1f;
     [Range(0, 10)] public float boidSpeed = 1f;
     [Range(0, 2)] public float boidRadius = 1f;
+    [Range(0, 1)] public float boidDamge = 0.1f;
     [Range(0, 1)] public float gunDamage = 0.1f;
     [Range(0, 100)] public float gunRange = 10f;
     
@@ -68,13 +71,49 @@ public class BoidsManager : MonoBehaviour
     private void InitBoids()
     {
         boidsArray = new Boid[numOfBoids];
+        float spawnAreaWidth = caveVectorField.chunkSize * 3;
 
         for (int i = 0; i < numOfBoids; i++)
         {
-            Vector3 pos = transform.position + Random.insideUnitSphere * spawnRadius;
+            Vector3 pos = GetBoidSpawnPos() - new Vector3(spawnAreaWidth / 2, 0 , spawnAreaWidth / 2);
             Quaternion rot = Quaternion.Slerp(transform.rotation, Random.rotation, 0.3f);
             boidsArray[i] = new Boid(pos, rot.eulerAngles, 1);
         }
+    }
+
+    private Vector3 GetBoidSpawnPos()
+    {
+        Vector3 respawnPos;
+        int chunkSize = caveVectorField.chunkSize;
+        float respawnWidth = 10;
+        float randX = Random.Range(0f, 1f);
+        float randY = Random.Range(0f, 1f);
+        float randZ = Random.Range(0f, 1f);
+        
+        respawnPos.y = randY * (chunkSize * 2 - respawnWidth * 2) + respawnWidth;
+
+        if(Random.Range(0f, 1f) < 0.5)
+        {
+            respawnPos.x = randX * chunkSize * 3;
+            if(respawnPos.x > respawnWidth && respawnPos.x < chunkSize * 3 - respawnWidth)
+            {
+                float extraZPos = (int)(randZ * 2) * (chunkSize * 3 - respawnWidth);
+                respawnPos.z = randZ * respawnWidth + extraZPos;
+                return respawnPos;
+            }
+            respawnPos.z = randZ * chunkSize * 3;
+            return respawnPos;
+        }
+	
+        respawnPos.z = randZ * chunkSize * 3;
+        if(respawnPos.z > respawnWidth && respawnPos.z < chunkSize * 3 - respawnWidth)
+        {
+            float extraZPos = (int)(randX * 2) * (chunkSize * 3 - respawnWidth);
+            respawnPos.x = randX * respawnWidth + extraZPos;
+            return respawnPos;
+        }
+        respawnPos.x = randX * chunkSize * 3;
+        return respawnPos;
     }
 
     void InitShader()
@@ -103,6 +142,7 @@ public class BoidsManager : MonoBehaviour
         boidShader.SetBuffer(prepKernel, "boidsVelBuffer", boidsVelBuffer);
         boidShader.SetBuffer(moveAndRaycastKernel, "boidsVelBuffer", boidsVelBuffer);
         boidShader.SetBuffer(moveAndRaycastKernel, "playerHitBuffer", playerHitsBuffer);
+        boidShader.SetBuffer(moveKernel, "boidsHitBuffer", boidsHitsBuffer);
         boidShader.SetBuffer(moveAndRaycastKernel, "boidsHitBuffer", boidsHitsBuffer);
         boidShader.SetTexture(moveKernel, "vectorField", caveVectorField.vectorField);
         boidShader.SetTexture(moveAndRaycastKernel, "vectorField", caveVectorField.vectorField);
@@ -130,6 +170,8 @@ public class BoidsManager : MonoBehaviour
                 actualGunRange = Mathf.Min(actualGunRange, distanceToWall);
             }
             
+            boidShader.SetTexture(moveKernel, "vectorField", caveVectorField.vectorField);
+            boidShader.SetTexture(moveAndRaycastKernel, "vectorField", caveVectorField.vectorField);
             boidShader.SetFloat("time", Time.time);
             boidShader.SetFloat("deltaTime", Time.deltaTime);
             boidShader.SetFloat("seperationForce", seperationForce);
@@ -162,11 +204,11 @@ public class BoidsManager : MonoBehaviour
             
             if (amountPlayerHits > 0)
             {
-                Debug.Log($"Amount boids killed: {amountPlayerHits}");
+                EventSystem<int>.RaiseEvent(EventType.UPDATE_SCORE, amountPlayerHits * 10);
             }
             if (amountBoidsHits > 0)
             {
-                Debug.Log($"Amount times player got hit: {amountBoidsHits}");
+                EventSystem<float>.RaiseEvent(EventType.UPDATE_HEALTH, amountBoidsHits * boidDamge);
             }
         }
         Graphics.DrawMeshInstancedIndirect(boidMesh, 0, boidMaterial, bounds, argsBuffer);

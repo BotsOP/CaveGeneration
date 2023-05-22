@@ -8,6 +8,8 @@ namespace Managers
         FILL_TERRAIN,
         UPDATE_VECTORFIELD,
         GENERATE_VECTORFIELD,
+        UPDATE_HEALTH,
+        UPDATE_SCORE,
     }
 
 

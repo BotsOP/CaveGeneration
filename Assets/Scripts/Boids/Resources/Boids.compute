@@ -151,11 +151,13 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 	
 	if(distance(boid.position, playerPos) < 3)
 	{
-		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + float3(bottomLeftVectorFieldCorner.x, 0, bottomLeftVectorFieldCorner.z);
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
 		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
+
+		InterlockedAdd(boidsHitBuffer[0], 1);
 		return;
 	}
 	
@@ -216,7 +218,7 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 		
 		if(boid.health <= 0)
 		{
-			boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+			boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + float3(bottomLeftVectorFieldCorner.x, 0, bottomLeftVectorFieldCorner.z);
 			boidsBuffer[instanceId].health = 1;
 
 			boidsVelBuffer[instanceId].separation = int3(0,0,0);
@@ -230,7 +232,7 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	
 	if(distance(boid.position, playerPos) < 3)
 	{
-		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
+		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + float3(bottomLeftVectorFieldCorner.x, 0, bottomLeftVectorFieldCorner.z);
 		boidsBuffer[instanceId].health = 1;
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);

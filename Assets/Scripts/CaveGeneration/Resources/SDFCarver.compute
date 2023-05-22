@@ -13,8 +13,8 @@ int roof;
 [numthreads(8,8,8)]
 void RemoveTerrain (uint3 id : SV_DispatchThreadID)
 {
-	uint3 worldPos = id + chunkPos;
-	if(worldPos.y <= (uint)2 || worldPos.y >= (uint)(35))
+	uint3 worldPos = id + (uint3)chunkPos + startPos;
+	if(worldPos.y <= (uint)2 || worldPos.y >= (uint)roof - 2)
 	{
 		return;
 	}

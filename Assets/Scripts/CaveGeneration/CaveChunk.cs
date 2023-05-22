@@ -18,6 +18,7 @@ public class CaveChunk
     private int kernelIndex;
     private int chunkSize;
     private int amountChunksVertial;
+    private int amountDecorations;
     private Bounds meshBounds;
     public GraphicsBuffer vertexBuffer;
     public GraphicsBuffer indexBuffer;
@@ -32,6 +33,7 @@ public class CaveChunk
         meshFilter = _gameObject.GetComponent<MeshFilter>();
         gameObject = _gameObject;
         isoLevel = _isoLevel;
+        amountDecorations = _amountDecorations;
         decorations = new List<GameObject>();
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
@@ -61,9 +63,8 @@ public class CaveChunk
 
         Initialize(_noiseScale);
         GenerateMesh();
-        SpawnDecorations(_decorationObject);
     }
-    public CaveChunk(float _chunkSize, int _amountChunksVertial, Vector3 _position, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter, List<GameObject> _decorations)
+    public CaveChunk(float _chunkSize, int _amountChunksVertial, Vector3 _position, float _isoLevel, float _noiseScale, GameObject _gameObject, MeshFilter _meshFilter, int _amountDecorations, GameObject _decorationObject, List<GameObject> _decorations)
     {
         chunkSize = (int)_chunkSize;
         amountChunksVertial = _amountChunksVertial;
@@ -71,6 +72,7 @@ public class CaveChunk
         meshFilter = _meshFilter;
         gameObject = _gameObject;
         decorations = _decorations;
+        amountDecorations = _amountDecorations;
         isoLevel = _isoLevel;
         caveGenerationShader = Resources.Load<ComputeShader>("CaveGeneration");
         noiseGenerationShader = Resources.Load<ComputeShader>("3DNoise");
@@ -99,7 +101,6 @@ public class CaveChunk
 
         Initialize(_noiseScale);
         GenerateMesh();
-        SpawnDecorations();
     }
 
     public void OnDestroy()
@@ -173,55 +174,83 @@ public class CaveChunk
         amountVertsBuffer.SetData(new [] { 0 });
     }
 
-    private void SpawnDecorations(GameObject _decoration)
+    public void SpawnDecorations(GameObject _decoration, Vector2 _center)
     {
         Vector3 rayOrigin = position + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
-        RayOutput rayOutput;
-        int maxAmountOfRays = 10;
-        int index = 0;
-        while (true)
+        Vector2 middlePos = new Vector2(position.x + chunkSize / 2f, position.z + chunkSize / 2f);
+        float xDot = Vector2.Dot((_center - middlePos).normalized, Vector2.right);
+        float zDot = Vector2.Dot((_center - middlePos).normalized, Vector2.up);
+        for (int i = 0; i < amountDecorations; i++)
         {
-            Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
-            if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, position, rayOrigin, rayDirection, out rayOutput))
+            Vector3 rayDirection = Vector3.one;
+            if (xDot > 0.5)
+            {
+                rayDirection = new Vector3(1, Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 2000;
+            }
+            else if(xDot < -0.5)
+            {
+                rayDirection = new Vector3(-1, Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 2000;
+            }
+            if (zDot > 0.5)
+            {
+                rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), 1).normalized * 2000;
+            }
+            else if(zDot < -0.5)
+            {
+                rayDirection = new Vector3(-1, Random.Range(-1, 1), -1).normalized * 2000;
+            }
+            
+            if (CavePhysicsManager.instance.Raycast(rayOrigin, rayDirection, out RayOutput rayOutput))
             {
                 GameObject tempDeco = Object.Instantiate(_decoration, rayOutput.position, Quaternion.LookRotation(rayOutput.normal));
                 decorations.Add(tempDeco);
-                return;
             }
-
-            index++;
-            if (index > maxAmountOfRays)
+            else
             {
-                Debug.LogWarning($"After shooting {maxAmountOfRays} rays still couldnt hit anything");
-                return;
+                Debug.LogWarning($"Raycast didnt hit anything");
             }
         }
-        
     }
-    private void SpawnDecorations()
+    public void RespawnDecorations(GameObject _decoration, Vector2 _center)
     {
-        foreach (var decoration in decorations)
+        Vector3 rayOrigin = position + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
+        Vector2 middlePos = new Vector2(position.x + chunkSize / 2f, position.z + chunkSize / 2f);
+        float xDot = Vector2.Dot((_center - middlePos).normalized, Vector2.right);
+        float zDot = Vector2.Dot((_center - middlePos).normalized, Vector2.up);
+        for (int i = 0; i < amountDecorations; i++)
         {
-            Vector3 rayOrigin = position + new Vector3(chunkSize / 2f, chunkSize / 2f, chunkSize / 2f);
-            RayOutput rayOutput;
-            int maxAmountOfRays = 10;
-            int index = 0;
-            while (true)
+            Vector3 rayDirection = Vector3.one;
+            if (xDot > 0.5)
             {
-                Vector3 rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 32;
-                if (GPUPhysics.RayIntersectMesh(vertexBuffer, indexBuffer, position, rayOrigin, rayDirection, out rayOutput))
+                rayDirection = new Vector3(1, Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 2000;
+            }
+            else if(xDot < -0.5)
+            {
+                rayDirection = new Vector3(-1, Random.Range(-1, 1), Random.Range(-1, 1)).normalized * 2000;
+            }
+            if (zDot > 0.5)
+            {
+                rayDirection = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), 1).normalized * 2000;
+            }
+            else if(zDot < -0.5)
+            {
+                rayDirection = new Vector3(-1, Random.Range(-1, 1), -1).normalized * 2000;
+            }
+            
+            if (CavePhysicsManager.instance.Raycast(rayOrigin, rayDirection, out RayOutput rayOutput))
+            {
+                if (i > decorations.Count - 1)
                 {
-                    decoration.transform.position = rayOutput.position;
-                    decoration.transform.rotation = Quaternion.LookRotation(rayOutput.normal);
-                    return;
+                    GameObject tempDeco = Object.Instantiate(_decoration, rayOutput.position, Quaternion.LookRotation(rayOutput.normal));
+                    decorations.Add(tempDeco);
+                    continue;
                 }
-
-                index++;
-                if (index > maxAmountOfRays)
-                {
-                    Debug.LogWarning($"After shooting {maxAmountOfRays} rays still couldnt hit anything2");
-                    return;
-                }
+                decorations[i].transform.position = rayOutput.position;
+                decorations[i].transform.rotation = Quaternion.LookRotation(rayOutput.normal);
+            }
+            else
+            {
+                Debug.LogWarning($"Raycast didnt hit anything");
             }
         }
     }

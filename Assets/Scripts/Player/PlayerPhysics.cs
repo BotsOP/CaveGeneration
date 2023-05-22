@@ -9,7 +9,7 @@ public class PlayerPhysics : MonoBehaviour
 	float maxSpeed = 10f;
 	[SerializeField, Range(0f, 1000f)]
 	float maxAcceleration = 10f, maxAirAcceleration = 1f;
-	[SerializeField, Range(0f, 10f)] private float jumpHeight = 2f;
+	[SerializeField, Range(0f, 50f)] private float jumpHeight = 2f;
 	[SerializeField] private float collisionSolverMultiplier = 1;
 	[SerializeField, Range(0, 5)]
 	int maxAirJumps = 0;
@@ -19,8 +19,6 @@ public class PlayerPhysics : MonoBehaviour
 	float maxSnapSpeed = 100f;
 	[SerializeField, Min(0f)]
 	float probeDistance = 1f;
-	[SerializeField]
-	LayerMask probeMask = -1, stairsMask = -1;
 	
 	Rigidbody body;
 	Vector3 velocity, desiredVelocity;
@@ -210,29 +208,6 @@ public class PlayerPhysics : MonoBehaviour
 		}
 		velocity += jumpDirection * jumpSpeed;
 	}
-
-	// void OnCollisionEnter (Collision collision) {
-	// 	EvaluateCollision(collision);
-	// }
-	//
-	// void OnCollisionStay (Collision collision) {
-	// 	EvaluateCollision(collision);
-	// }
-	//
-	// void EvaluateCollision (Collision collision) {
-	// 	float minDot = GetMinDot(collision.gameObject.layer);
-	// 	for (int i = 0; i < collision.contactCount; i++) {
-	// 		Vector3 normal = collision.GetContact(i).normal;
-	// 		if (normal.y >= minDot) {
-	// 			groundContactCount += 1;
-	// 			contactNormal += normal;
-	// 		}
-	// 		else if (normal.y > -0.01f) {
-	// 			steepContactCount += 1;
-	// 			steepNormal += normal;
-	// 		}
-	// 	}
-	// }
 
 	Vector3 ProjectOnContactPlane (Vector3 vector) {
 		return vector - contactNormal * Vector3.Dot(vector, contactNormal);
