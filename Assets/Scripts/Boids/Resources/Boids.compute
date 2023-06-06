@@ -11,7 +11,6 @@ struct Boid
 };
 struct BoidVel
 {
-	int3 alignment;
 	int3 separation;
 	int neighbourCount;
 };
@@ -134,9 +133,9 @@ void PrepBoids (uint3 id : SV_DispatchThreadID)
 		InterlockedAdd(boidsVelBuffer[id.y].separation.y, separation.y * floatPrecession);
 		InterlockedAdd(boidsVelBuffer[id.y].separation.z, separation.z * floatPrecession);
 		
-		InterlockedAdd(boidsVelBuffer[id.y].alignment.x, neighbourBoid.direction.x * floatPrecession);
-		InterlockedAdd(boidsVelBuffer[id.y].alignment.y, neighbourBoid.direction.y * floatPrecession);
-		InterlockedAdd(boidsVelBuffer[id.y].alignment.z, neighbourBoid.direction.z * floatPrecession);
+		// InterlockedAdd(boidsVelBuffer[id.y].alignment.x, neighbourBoid.direction.x * floatPrecession);
+		// InterlockedAdd(boidsVelBuffer[id.y].alignment.y, neighbourBoid.direction.y * floatPrecession);
+		// InterlockedAdd(boidsVelBuffer[id.y].alignment.z, neighbourBoid.direction.z * floatPrecession);
 
 		InterlockedAdd(boidsVelBuffer[id.y].neighbourCount, 1);
 	}
@@ -154,7 +153,6 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + float3(bottomLeftVectorFieldCorner.x, 0, bottomLeftVectorFieldCorner.z);
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
-		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
 
 		InterlockedAdd(boidsHitBuffer[0], 1);
@@ -168,7 +166,6 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
-		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
 		return;
 	}
@@ -178,16 +175,10 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 	float3 boid_dir = boid.direction;
 
 	float3 separation = boidVel.separation / floatPrecession;
-	float3 alignment = boidVel.alignment / floatPrecession;
 	currentVectorPos = float3(round(currentVectorPos.x), round(currentVectorPos.y), round(currentVectorPos.z));
 	float3 pathfind = vectorField[currentVectorPos].xyz;
 
-	int nearbyCount = boidVel.neighbourCount + 1;
-
-	float avg = 1.0 / nearbyCount;
-	alignment *= avg;
-	
-	float3 direction = alignment * alignment + separation * seperationForce + pathfind * pathFindForce;
+	float3 direction = separation * seperationForce + pathfind * pathFindForce;
 
 	float ip = exp(-rotationSpeed * deltaTime);
 	boid.direction = normalize(lerp(direction, boid_dir, ip));
@@ -197,7 +188,6 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 	boidsBuffer[instanceId] = boid;
 
 	boidsVelBuffer[instanceId].separation = int3(0,0,0);
-	boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 	boidsVelBuffer[instanceId].neighbourCount = 0;
 }
 
@@ -212,9 +202,10 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	if(LineSphereIntersection(rayOrigin, rayDirection, boid.position, boidRadius, closestPoint) && distance(playerPos, boid.position) < gunRange)
 	{
 		float3 dirToBoid = normalize(boid.position - playerPos);
-		//if the dot product is bigger then 0.5 do dmg
 		int boidDot = saturate(floor(dot(dirToBoid, rayDirection) * 2));
-		boid.health -= gunDamage * boidDot;
+		float calcGunDamage = (boidRadius - distance(closestPoint + dirToBoid, boid.position)) / boidRadius;
+		calcGunDamage = calcGunDamage * gunDamage;
+		boid.health -= calcGunDamage * boidDot;
 		
 		if(boid.health <= 0)
 		{
@@ -222,7 +213,6 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 			boidsBuffer[instanceId].health = 1;
 
 			boidsVelBuffer[instanceId].separation = int3(0,0,0);
-			boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 			boidsVelBuffer[instanceId].neighbourCount = 0;
 
 			InterlockedAdd(playerHitBuffer[0], 1);
@@ -236,7 +226,6 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 		boidsBuffer[instanceId].health = 1;
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
-		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
 
 		InterlockedAdd(boidsHitBuffer[0], 1);
@@ -250,7 +239,6 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 		boidsBuffer[instanceId].position = newRespawnPos(boid.position * time) + bottomLeftVectorFieldCorner;
 
 		boidsVelBuffer[instanceId].separation = int3(0,0,0);
-		boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 		boidsVelBuffer[instanceId].neighbourCount = 0;
 		return;
 	}
@@ -260,26 +248,19 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	float3 boid_dir = boid.direction;
 
 	float3 separation = boidVel.separation / floatPrecession;
-	float3 alignment = boidVel.alignment / floatPrecession;
 	currentVectorPos = float3(round(currentVectorPos.x), round(currentVectorPos.y), round(currentVectorPos.z));
 	float3 pathfind = vectorField[currentVectorPos].xyz;
 
-	int nearbyCount = boidVel.neighbourCount + 1;
-
-	float avg = 1.0 / nearbyCount;
-	alignment *= avg;
-	
-	float3 direction = alignment * alignment + separation * seperationForce + pathfind * pathFindForce;
+	float3 direction = separation * seperationForce + pathfind * pathFindForce;
 
 	float ip = exp(-rotationSpeed * deltaTime);
 	boid.direction = normalize(lerp(direction, boid_dir, ip));
-
+	
 	boid.position += (boid.direction) * (velocity * deltaTime);
 
 	boidsBuffer[instanceId] = boid;
 
 	boidsVelBuffer[instanceId].separation = int3(0,0,0);
-	boidsVelBuffer[instanceId].alignment = int3(0,0,0);
 	boidsVelBuffer[instanceId].neighbourCount = 0;
 }
 

@@ -4,24 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/shelf/Uncommitted_changes_before_Update_at_14_05_2023_20_53_[Changes]/shelved.patch" beforeDir="false" />
+    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="small tweaks">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Materials/BoidsMat.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/BoidsMat.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Light.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/Light.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/EventSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/EventSystem.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Settings/SampleSceneProfile.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/SampleSceneProfile.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRenderer.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRenderer.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/DynamicsManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/DynamicsManager.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,15 +41,28 @@
     <setting file="file://$PROJECT_DIR$/../Marching-Cubes/Assets/Scripts/Compute/NoiseDensity.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../ShowMe/Assets/Scripts/Player/FPSController.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../ShowMe/Assets/Scripts/Player/PlayerMovement.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/BlurHighlight.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/BufferJoy.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/Challenge7.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/GPUPhysicsCubes.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/GaussianBlurHighlight.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/GrassBlades.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/GrassClumps.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/MarchingCubes.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/PassData.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/RingHighlight.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/SierpinskiTriangle.compute" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../UnityComputeShaders-main/UnityComputeShaders - complete/Assets/Shaders/StableFluids.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../UnityComputeShaders/UnityComputeShaders - complete/Assets/Shaders/InstancedFlocking.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../VAT_Converter/Assets/Scripts/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../VAT_Converter/Assets/Scripts/VAT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../lvl99-gamejam/Assets/Scripts/MatchDrawing/MatchDrawing.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/501b9c146ac84bf0b10c9b8b35a86ec819ea00/33/40e5690c/PooledList`1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/724a17bc4e7e400692da552fd14a607d19ea00/84/6e7a607d/PooledList`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8f06425e63004caf99a79845675f751e46a800/bf/7dbc1b61/ThrowHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8f06425e63004caf99a79845675f751e46a800/c1/261bf172/Stack`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/6b/298aa147/GraphicsBuffer.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/7e/9e42b463/Graphics.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/be/ea67368c/Ray.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/e9/99bbd2fc/Object.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -108,10 +110,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="19036">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="2392">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="19036" />
+      <option name="pid" value="2392" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -136,6 +138,8 @@
       <updated>1684662842981</updated>
       <workItem from="1684662872272" duration="1536000" />
       <workItem from="1684760830570" duration="8602000" />
+      <workItem from="1684853434966" duration="1921000" />
+      <workItem from="1686045572122" duration="2058000" />
     </task>
     <option name="localTasksCounter" value="2" />
     <servers />
@@ -177,13 +181,26 @@
           </properties>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs</url>
+          <line>202</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\Boids\BoidsManager.cs" initialLine="199" containingFunctionPresentation="method 'Update'">
+            <startOffsets>
+              <option value="8590" />
+            </startOffsets>
+            <endOffsets>
+              <option value="8591" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="Type#Location" memberName="G" />
-        <PinnedItemInfo parentTag="Type#Location" memberName="H" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="z" />
+        <PinnedItemInfo parentTag="Type#Location" memberName="H" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="x" />
         <PinnedItemInfo parentTag="Type#CaveVectorField+Int3" memberName="y" />
         <PinnedItemInfo parentTag="Type#BoidsManager+BoidVel" memberName="neighbourCount" />

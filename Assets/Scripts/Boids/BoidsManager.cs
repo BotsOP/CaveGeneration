@@ -121,7 +121,7 @@ public class BoidsManager : MonoBehaviour
         boidsBuffer = new ComputeBuffer(numOfBoids, 7 * sizeof(float));
         boidsBuffer.SetData(boidsArray);
 
-        boidsVelBuffer = new ComputeBuffer(numOfBoids, sizeof(int) * 7, ComputeBufferType.Structured);
+        boidsVelBuffer = new ComputeBuffer(numOfBoids, sizeof(int) * 4, ComputeBufferType.Structured);
         boidsVelBuffer.SetData(new BoidVel[numOfBoids]);
 
         playerHitsBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
@@ -217,8 +217,9 @@ public class BoidsManager : MonoBehaviour
     void OnDestroy()
     {
         boidsBuffer?.Dispose();
-        boidsVelBuffer?.Dispose();
         argsBuffer?.Dispose();
+        playerHitsBuffer?.Dispose();
+        boidsHitsBuffer?.Dispose();
     }
     
     struct Boid
@@ -241,9 +242,9 @@ public class BoidsManager : MonoBehaviour
 
     struct BoidVel
     {
-        public int alignmentX;
-        public int alignmentY;
-        public int alignmentZ;
+        // public int alignmentX;
+        // public int alignmentY;
+        // public int alignmentZ;
         
         // public int cohesionX;
         // public int cohesionY;
