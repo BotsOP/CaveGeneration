@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="small tweaks">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="optimized boids and boids further from gun laser take less damage">
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGeneration/Resources/SDFCarver.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRenderer.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRenderer.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,11 +14,13 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/Boids/Resources/Boids.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveVectorField.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Managers/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerGun.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerMovement.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerPhysics.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Shaders/GetHealth.hlsl" root0="FORCE_HIGHLIGHTING" />
@@ -139,9 +136,16 @@
       <workItem from="1684662872272" duration="1536000" />
       <workItem from="1684760830570" duration="8602000" />
       <workItem from="1684853434966" duration="1921000" />
-      <workItem from="1686045572122" duration="2058000" />
+      <workItem from="1686045572122" duration="4448000" />
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="optimized boids and boids further from gun laser take less damage">
+      <created>1686049173536</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1686049173536</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -163,36 +167,24 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="wtf are these uncommited changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="wtf are these uncommited changes" />
+    <MESSAGE value="optimized boids and boids further from gun laser take less damage" />
+    <option name="LAST_COMMIT_MESSAGE" value="optimized boids and boids further from gun laser take less damage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveChunk.cs</url>
-          <line>239</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\CaveGeneration\CaveChunk.cs" initialLine="219" containingFunctionPresentation="method 'RespawnDecorations'">
-            <startOffsets>
-              <option value="10799" />
-            </startOffsets>
-            <endOffsets>
-              <option value="10889" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs</url>
-          <line>202</line>
-          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\Boids\BoidsManager.cs" initialLine="199" containingFunctionPresentation="method 'Update'">
+          <line>129</line>
+          <properties documentPath="C:\UnityProjects\CaveGeneration\Assets\Scripts\Boids\BoidsManager.cs" initialLine="129" containingFunctionPresentation="method 'InitShader'">
             <startOffsets>
-              <option value="8590" />
+              <option value="4593" />
             </startOffsets>
             <endOffsets>
-              <option value="8591" />
+              <option value="4682" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="6" />
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
