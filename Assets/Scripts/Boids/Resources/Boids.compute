@@ -1,6 +1,7 @@
 ﻿#pragma kernel PrepBoids
 #pragma kernel MoveBoids
 #pragma kernel MoveBoidsAndRaycast
+#pragma kernel CopyAppendToStructured
 #define GROUP_SIZE 512
 
 struct Boid
@@ -191,6 +192,9 @@ void MoveBoids (uint3 id : SV_DispatchThreadID)
 	boidsVelBuffer[instanceId].neighbourCount = 0;
 }
 
+AppendStructuredBuffer<float3> boidsBeingHitBuffer;
+RWStructuredBuffer<int> amountBoidsBeingHitBuffer;
+
 [numthreads(GROUP_SIZE,1,1)]
 void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 {
@@ -203,9 +207,13 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 	{
 		float3 dirToBoid = normalize(boid.position - playerPos);
 		int boidDot = saturate(floor(dot(dirToBoid, rayDirection) * 2));
-		float calcGunDamage = (boidRadius - distance(closestPoint + dirToBoid, boid.position)) / boidRadius;
-		calcGunDamage = calcGunDamage * gunDamage;
+		// float calcGunDamage = (boidRadius - distance(closestPoint + dirToBoid, boid.position)) / boidRadius;
+		// calcGunDamage = calcGunDamage * gunDamage;
+		float calcGunDamage = gunDamage;
 		boid.health -= calcGunDamage * boidDot;
+
+		boidsBeingHitBuffer.Append(boid.position);
+		InterlockedAdd(amountBoidsBeingHitBuffer[0], 1);
 		
 		if(boid.health <= 0)
 		{
@@ -262,6 +270,15 @@ void MoveBoidsAndRaycast (uint3 id : SV_DispatchThreadID)
 
 	boidsVelBuffer[instanceId].separation = int3(0,0,0);
 	boidsVelBuffer[instanceId].neighbourCount = 0;
+}
+
+RWStructuredBuffer<float3> boidsBeingHitStruc;
+ConsumeStructuredBuffer<float3> boidsBeingHitCons;
+
+[numthreads(128,1,1)]
+void CopyAppendToStructured (uint3 id : SV_DispatchThreadID)
+{
+	boidsBeingHitStruc[id.x] = boidsBeingHitCons.Consume();
 }
 
 

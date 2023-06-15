@@ -29,6 +29,14 @@ public static class ExtensionMethods
         return intArray[0];
     }
     
+    public static int GetCounter(this GraphicsBuffer _buffer)
+    {
+        int[] intArray = new int[1];
+        _buffer.GetData(intArray);
+        _buffer.SetData(new int[1]);
+        return intArray[0];
+    }
+    
     public static void Clear(this CustomRenderTexture _rt, bool _clearDepth, bool _clearColor, Color _color)
     {
         Graphics.SetRenderTarget(_rt);

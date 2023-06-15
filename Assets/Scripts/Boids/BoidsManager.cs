@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Managers;
 using UnityEngine;
+using UnityEngine.VFX;
 using EventType = Managers.EventType;
 
 public class BoidsManager : MonoBehaviour
@@ -22,8 +23,9 @@ public class BoidsManager : MonoBehaviour
     [Header("Boid Visual")]
     public Mesh boidMesh;
     public Material boidMaterial;
-    
+
     [Header("Dev settings")]
+    public VisualEffect gunVFX;
     public Transform camTransform;
     public CaveVectorField caveVectorField;
     [Range(0, 3)] public float neighbourDistance = 1f;
@@ -37,6 +39,9 @@ public class BoidsManager : MonoBehaviour
     private ComputeBuffer playerHitsBuffer;
     private ComputeBuffer boidsHitsBuffer;
     private ComputeBuffer argsBuffer;
+    private GraphicsBuffer boidsBeingHitBuffer;
+    private GraphicsBuffer boidsBeingHitBufferStructured;
+    private GraphicsBuffer amountBoidsBeingHitBuffer;
     private int prepKernel;
     private int moveKernel;
     private int moveAndRaycastKernel;
@@ -128,6 +133,13 @@ public class BoidsManager : MonoBehaviour
         boidsHitsBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
 
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+
+        boidsBeingHitBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, 1000, sizeof(float) * 3);
+        boidsBeingHitBufferStructured = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1000, sizeof(float) * 3);
+        amountBoidsBeingHitBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(int));
+        
+        gunVFX.SetGraphicsBuffer("BoidsHit", boidsBeingHitBufferStructured);
+        
         if (boidMesh != null)
         {
             args[0] = boidMesh.GetIndexCount(0);
@@ -144,8 +156,14 @@ public class BoidsManager : MonoBehaviour
         boidShader.SetBuffer(moveAndRaycastKernel, "playerHitBuffer", playerHitsBuffer);
         boidShader.SetBuffer(moveKernel, "boidsHitBuffer", boidsHitsBuffer);
         boidShader.SetBuffer(moveAndRaycastKernel, "boidsHitBuffer", boidsHitsBuffer);
+        boidShader.SetBuffer(moveAndRaycastKernel, "boidsBeingHitBuffer", boidsBeingHitBuffer);
+        boidShader.SetBuffer(moveAndRaycastKernel, "amountBoidsBeingHitBuffer", amountBoidsBeingHitBuffer);
+        boidShader.SetBuffer(3, "boidsBeingHitStruc", boidsBeingHitBufferStructured);
+        boidShader.SetBuffer(3, "boidsBeingHitCons", boidsBeingHitBuffer);
+        
         boidShader.SetTexture(moveKernel, "vectorField", caveVectorField.vectorField);
         boidShader.SetTexture(moveAndRaycastKernel, "vectorField", caveVectorField.vectorField);
+        
         boidShader.SetInt("floatPrecession", floatPrecession);
         boidShader.SetFloat("rotationSpeed", rotationSpeed);
         boidShader.SetFloat("boidSpeed", boidSpeed);
@@ -187,16 +205,33 @@ public class BoidsManager : MonoBehaviour
             boidShader.SetInt("chunkSize", caveVectorField.chunkSize);
             boidShader.SetVector("bottomLeftVectorFieldCorner", caveVectorField.bottomLeftCorner);
 
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                Debug.Break();
+            }
+
             if (Input.GetMouseButton(1))
             {
+                boidsBeingHitBuffer.SetCounterValue(0);
+                
                 boidShader.SetVector("rayOrigin", camTransform.position);
                 boidShader.SetVector("rayDirection", camTransform.forward);
                 boidShader.SetFloat("boidRadius", boidRadius);
                 boidShader.Dispatch(moveAndRaycastKernel, groupSizeXMoveBoids, 1, 1);
+
+                int amountBoidsHit = amountBoidsBeingHitBuffer.GetCounter();
+                gunVFX.SetInt("AmountBoidsHit", amountBoidsHit);
+
+                if (amountBoidsHit > 0 && amountBoidsHit < boidsCount)
+                {
+                    boidShader.Dispatch(3, Mathf.CeilToInt(amountBoidsHit / 128f), 1, 1);
+                    Debug.Log(amountBoidsHit);
+                }
             }
             else
             {
                 boidShader.Dispatch(moveKernel, groupSizeXMoveBoids, 1, 1);
+                gunVFX.SetInt("AmountBoidsHit", 0);
             }
 
             int amountPlayerHits = playerHitsBuffer.GetCounter();
