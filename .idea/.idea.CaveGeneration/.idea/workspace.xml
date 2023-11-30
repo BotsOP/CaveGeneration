@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="commit">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CaveGeneration/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/BoidsManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Boids/Resources/Boids.compute" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/ExtensionMethods.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/ExtensionMethods.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/vfx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/vfx.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/vfx/gunVFX.vfx" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/vfx/gunVFX.vfx" afterDir="false" />
+    <list default="true" id="3eead431-e56a-4ef9-8776-42328b5d0e66" name="Changes" comment="added gun visuals">
+      <change beforePath="$PROJECT_DIR$/Assets/VFX/test.vfx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/VFX/test.vfx.meta" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +15,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../BetterDisintegration/Assets/Scripts/Library/MeshExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/UnityProjects/CaveGeneration/Assets/Scripts/Boids/Resources/Boids.compute" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePathfinding.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CavePhysicsManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/CaveGeneration/CaveTerrainCarver.cs" root0="FORCE_HIGHLIGHTING" />
@@ -138,7 +134,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686049173536</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added gun visuals">
+      <created>1686834245862</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1686834245862</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -161,7 +164,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="wtf are these uncommited changes" />
     <MESSAGE value="optimized boids and boids further from gun laser take less damage" />
-    <option name="LAST_COMMIT_MESSAGE" value="optimized boids and boids further from gun laser take less damage" />
+    <MESSAGE value="added gun visuals" />
+    <option name="LAST_COMMIT_MESSAGE" value="added gun visuals" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
